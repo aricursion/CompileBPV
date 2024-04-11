@@ -1,4 +1,5 @@
 (executable
  (public_name CompileBPV)
  (name main)
+ (modes exe)
  (libraries CompileBPV))

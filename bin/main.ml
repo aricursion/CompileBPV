@@ -1,1 +1,3 @@
-let () = print_endline "Hello, World!"
+(* Calls the top-level compiler function *)
+
+let () = CompileBPV.Top.main ()
