@@ -2,6 +2,7 @@ type typ =
 | Arrow of typ * typ
 | Prod of typ list 
 | Sum of typ list
+| Comp of typ
 
 type term =
 | Lambda of Variable.t * typ * term
@@ -10,5 +11,8 @@ type term =
 | Proj of int * term
 | Inj of typ * int * term
 | Case of term * (Variable.t * term) list
-(* A bit ad hoc, but I want print "foo" ; Tup [] : Prod [] *)
-| Print of string * term
+
+type exp = 
+| Bind of exp * Variable.t * exp
+| Ret of term
+| Print of string 
