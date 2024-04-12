@@ -6,7 +6,11 @@ let rec tc (ctx : typ Context.t) (e : term) (t : typ) =
   match e with 
   | Var x -> (
       match Context.find_opt x ctx with
-      | Some(_) -> Ok(())
+      | Some(t') ->
+          if t' = t then
+            Ok(())
+          else 
+            Error (Printf.sprintf "Variable %s is in the context, but has type %s when expected %s" (Variable.pp_var x) (pp_typ t') (pp_typ t))
       | None -> Error (Printf.sprintf "Variable %s is not in the context" (Variable.pp_var x))
     )
   | Lambda (x, typ, e') -> (
