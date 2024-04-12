@@ -4,6 +4,11 @@ module Context = Map.Make(Variable)
 
 let rec tc (ctx : typ Context.t) (e : term) (t : typ) =
   match e with 
+  | Var x -> (
+      match Context.find_opt x ctx with
+      | Some(_) -> Ok(())
+      | None -> Error (Printf.sprintf "Variable %s is not in the context" (Variable.pp_var x))
+    )
   | Lambda (x, typ, e') -> (
       match t with
       | Arrow(t1, t2) -> 
