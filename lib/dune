@@ -1,4 +1,4 @@
 (library
  (name CompileBPV)
- (libraries cmdliner))
+ (libraries cmdliner core))
 (include_subdirs unqualified)
