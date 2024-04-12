@@ -4,6 +4,7 @@ type typ =
 | Sum of typ list
 
 type term =
+| Var of Variable.t
 | Lambda of Variable.t * typ *  term
 | Ap of term * term
 | Tup of term list
@@ -15,6 +16,7 @@ type term =
 
 let rec pp_term e = 
   match e with 
+  | Var x -> Variable.pp_var x
   | Lambda (x, t, e) -> "\\" ^  Variable.pp_var x ^ "." ^ pp_term e
   | Ap(e1, e2) -> "Ap(" ^ pp_term e1 ^ "," ^ pp_term e2 ^ ")"
   | Tup ts -> "<" ^ String.concat "," (List.map pp_term ts) ^ ">"

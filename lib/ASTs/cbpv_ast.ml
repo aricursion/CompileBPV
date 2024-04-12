@@ -10,7 +10,7 @@ and comp_type =
 
 
 type value_term =
-| Var of string
+| Var of Variable.t
 | Tensor of value_term list
 | Inj of value_type * int
 | Susp of comp_term

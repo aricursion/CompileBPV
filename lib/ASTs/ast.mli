@@ -4,6 +4,7 @@ type typ =
 | Sum of typ list
 
 type term =
+| Var of Variable.t
 | Lambda of Variable.t * typ *  term
 | Ap of term * term
 | Tup of term list
