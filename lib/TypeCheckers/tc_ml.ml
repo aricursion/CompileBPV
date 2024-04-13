@@ -24,9 +24,9 @@ let rec tc (ctx : typ Context.t) (e : term) (t : typ) =
     )
   | Ap (e1, e2) -> (
       match infer_tc ctx e1 with
-      | Ok(Arrow(_, t2)) -> 
+      | Ok(Arrow(t1, t2)) -> 
             if t = t2 then 
-              tc ctx e2 t2
+              tc ctx e2 t1
             else
               Error (Printf.sprintf "Term %s is an arrow which returns an %s, but should return %s" (pp_term e1) (pp_typ t2) (pp_typ t))
       | Ok(t) -> Error (Printf.sprintf "First component of application %s is not a function and has type %s " (pp_term e) (pp_typ t))
