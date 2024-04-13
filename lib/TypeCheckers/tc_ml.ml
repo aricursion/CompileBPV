@@ -24,7 +24,7 @@ let rec tc (ctx : typ Context.t) (e : term) (t : typ) =
     )
   | Ap (e1, e2) -> (
       match infer_tc ctx e1 with
-      | Ok(Arrow(t1, t2)) -> 
+      | Ok(Arrow(_, t2)) -> 
             if t = t2 then 
               tc ctx e2 t2
             else
@@ -45,17 +45,13 @@ let rec tc (ctx : typ Context.t) (e : term) (t : typ) =
         )
       | _ -> Error (Printf.sprintf "Term %s has type %s" (pp_term e) (pp_typ t))
     )
-  | Proj (i, e) -> (
-      match infer_tc ctx e with 
+    | Split (m, (vars, e)) -> (
+      match infer_tc ctx m with
       | Ok(Prod ts) -> 
-          if 0 <= i && i < List.length ts then 
-            if List.nth ts i = t then 
-              Ok(())
-            else
-              Error "Incorrect lenght of tuple in projection"
-          else
-            Error "Tuple Subscripting incorrect"
-      | _ -> Error "Trying to project from a non-product"
+          let new_ctx = List.fold_left (fun ctx (t, var) -> Context.add var t ctx) ctx (List.combine ts vars) in
+          tc new_ctx e t
+      | Ok(t) -> Error (Printf.sprintf "Tried to split on term %s with type %s" (pp_term m) (pp_typ t))
+      | Error e -> Error e
     )
   | Inj (sum_t, i, e_inj) -> (
       if t = sum_t then
@@ -83,10 +79,10 @@ let rec tc (ctx : typ Context.t) (e : term) (t : typ) =
             | Error e -> Error e
           else 
             Error "Number of arms in a case does not match the number of cases in the sum"
-      | Ok t -> Error "Tried to case on a non-sum"
+      | Ok _ -> Error "Tried to case on a non-sum"
       | Error e -> Error e
     )
-  | Print (s, e) -> tc ctx e t
+  | Print (_, e) -> tc ctx e t
 
 and infer_tc (ctx : typ Context.t) (e : term ) = 
   match e with 
@@ -112,7 +108,7 @@ and infer_tc (ctx : typ Context.t) (e : term ) =
               Error "Error while inferring application - input type doesn't match negative position in arrow"
         | _ -> Error "Error while inferring application - first arg is not an arrow"
       )
-    | (Ok t1, Error e) -> Error e
+    | (Ok _, Error e) -> Error e
     | (Error e, _) -> Error e
     )
   | Tup es -> (
@@ -121,14 +117,12 @@ and infer_tc (ctx : typ Context.t) (e : term ) =
       | Ok ts -> Ok (Prod ts)
       | Error e -> Error e
     )
-  | Proj (i, e) -> (
-      match infer_tc ctx e with
-      | Ok (Prod ts) -> 
-          if 0 <= i && i < List.length ts then
-            Ok (List.nth ts i)
-          else 
-            Error (Printf.sprintf "Invalid injection %d from term %s on the basis of length" i (pp_term e))
-      | Ok t -> Error "Projecting from non-tuple"
+  | Split (m, (vars, e)) -> (
+      match infer_tc ctx m with
+      | Ok(Prod ts) -> 
+          let new_ctx = List.fold_left (fun ctx (t, var) -> Context.add var t ctx) ctx (List.combine ts vars) in
+          infer_tc new_ctx e
+      | Ok(t) -> Error (Printf.sprintf "Tried to split on term %s with type %s" (pp_term m) (pp_typ t))
       | Error e -> Error e
     )
   | Inj (t, i, e) -> (
@@ -161,10 +155,10 @@ and infer_tc (ctx : typ Context.t) (e : term ) =
                 Error "Branches of arms don't have the same type"
         | _ -> raise (Failure "todo")
         )
-      | Ok t -> Error "Argument to case is not a sum"
+      | Ok _ -> Error "Argument to case is not a sum"
       | Error e -> Error e
     )
-  | Print (s, e) ->  infer_tc ctx e
+  | Print (_, e) ->  infer_tc ctx e
 
 
 let check_type (e : term) (t : typ) = tc Context.empty e t
