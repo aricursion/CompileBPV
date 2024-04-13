@@ -9,7 +9,7 @@ type term =
 | Lambda of Variable.t * typ * term
 | Ap of term * term
 | Tup of term list
-| Proj of int * term
+| Split of term * (Variable.t list * term)
 | Inj of typ * int * term
 | Case of term * (Variable.t * term) list
 | Comp of exp

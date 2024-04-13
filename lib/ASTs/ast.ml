@@ -8,7 +8,7 @@ type term =
 | Lambda of Variable.t * typ *  term
 | Ap of term * term
 | Tup of term list
-| Proj of int * term
+| Split of term * (Variable.t list * term)
 | Inj of typ * int * term
 | Case of term * (Variable.t * term) list
 (* A bit ad hoc, but I want print "foo" ; Tup [] : Prod [] *)
@@ -20,7 +20,7 @@ let rec pp_term e =
   | Lambda (x, t, e) -> "\\" ^  Variable.pp_var x ^ "." ^ pp_term e
   | Ap(e1, e2) -> "Ap(" ^ pp_term e1 ^ "," ^ pp_term e2 ^ ")"
   | Tup ts -> "<" ^ String.concat "," (List.map pp_term ts) ^ ">"
-  | Proj (i, t) -> "pi" ^ string_of_int i ^ " " ^ pp_term t
+  | Split (e1, (vs, e2)) -> "split(" ^ pp_term e1 ^ " " ^ String.concat "." (List.map Variable.pp_var vs) ^ ". " ^ pp_term e2 ^ ")"
   | Inj (t, i, e) -> "inj" ^ string_of_int i ^ " " ^ pp_term e
   | Case (t, arms) -> "case(" ^ pp_term t ^ ";" ^ String.concat ";" (List.map (fun (x, e) -> Variable.pp_var x ^ "." ^ pp_term e) arms)
   | Print (s, e) -> "print " ^ s ^"; " ^ pp_term e 
