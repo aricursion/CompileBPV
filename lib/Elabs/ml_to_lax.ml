@@ -9,7 +9,7 @@ let rec trans_typ (t : Ast.typ) =
 let rec elab m =
   match m with
   | Ast.Var x -> Var x
-  | Ast.Lambda (x, t, e) -> Comp (Ret (Lambda(x, trans_typ t, elab e)))
+  | Ast.Lambda (x, t, e) -> Lambda (x, trans_typ t, elab e)
   | Ast.Ap (e1, e2) -> Ap (elab e1, elab e2)
   | Ast.Tup ts -> Tup (List.map elab ts)
   | Ast.Proj (i, t) -> Proj(i, elab t)

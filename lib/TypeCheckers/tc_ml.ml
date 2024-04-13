@@ -48,7 +48,7 @@ let rec tc (ctx : typ Context.t) (e : term) (t : typ) =
   | Proj (i, e) -> (
       match infer_tc ctx e with 
       | Ok(Prod ts) -> 
-          if 0 < i && i < List.length ts then 
+          if 0 <= i && i < List.length ts then 
             if List.nth ts i = t then 
               Ok(())
             else
@@ -57,11 +57,115 @@ let rec tc (ctx : typ Context.t) (e : term) (t : typ) =
             Error "Tuple Subscripting incorrect"
       | _ -> Error "Trying to project from a non-product"
     )
-  | Inj (sum_t, i, e) -> raise (Failure "foo")
-  | Case (e, arms) -> raise (Failure "foo")
-  | Print (s, e) -> raise (Failure "foo")
+  | Inj (sum_t, i, e_inj) -> (
+      if t = sum_t then
+        match t with 
+        | Sum ts -> 
+          if 0 <= i && i < List.length ts then 
+            tc ctx e_inj (List.nth ts i)
+          else
+            Error (Printf.sprintf "Injection into type %s has invalid index %i" (pp_typ sum_t) i)
+        | _ -> Error (Printf.sprintf "Injection %s is not annotated with a sum - instead %s" (pp_term e) (pp_typ sum_t))
+      else
+        Error (Printf.sprintf "Expected type %s does not match type %s of expression %s" (pp_typ t) (pp_typ sum_t) (pp_term e_inj))
+    )
+  | Case (e, arms) -> (
+      match infer_tc ctx e with
+      | Ok (Sum ts) -> 
+          if List.length ts = List.length arms then 
+            let helper (t', (x, e')) = 
+              let new_ctx = Context.add x t' ctx in
+              tc new_ctx e' t
+            in
+            let res = List.map helper (List.combine ts arms) in 
+            match Base.Result.all res with 
+            | Ok _ -> Ok(())
+            | Error e -> Error e
+          else 
+            Error "Number of arms in a case does not match the number of cases in the sum"
+      | Ok t -> Error "Tried to case on a non-sum"
+      | Error e -> Error e
+    )
+  | Print (s, e) -> tc ctx e t
 
-and infer_tc (ctx : typ Context.t) (e : term ) = raise (Failure "unimplemented")
+and infer_tc (ctx : typ Context.t) (e : term ) = 
+  match e with 
+  | Var x -> (
+    match Context.find_opt x ctx with
+    | Some(t) -> Ok(t)
+    | None -> Error (Printf.sprintf "Variable %s is not in the context" (Variable.pp_var x))
+   )
+  | Lambda (x, t1, e) -> (
+      let new_ctx = Context.add x t1 ctx in
+      match infer_tc new_ctx e with
+      | Ok (t2) -> Ok (Arrow (t1, t2))
+      | Error e -> Error e
+    )
+  | Ap (e1, e2) -> (
+    match (infer_tc ctx e1, infer_tc ctx e2) with
+    | (Ok t1, Ok t') -> (
+        match t1 with
+        | Arrow (t1, t2) -> 
+            if t1 = t' then
+              Ok t2
+            else 
+              Error "Error while inferring application - input type doesn't match negative position in arrow"
+        | _ -> Error "Error while inferring application - first arg is not an arrow"
+      )
+    | (Ok t1, Error e) -> Error e
+    | (Error e, _) -> Error e
+    )
+  | Tup es -> (
+      let res = List.map (infer_tc ctx) es in
+      match Base.Result.all res with
+      | Ok ts -> Ok (Prod ts)
+      | Error e -> Error e
+    )
+  | Proj (i, e) -> (
+      match infer_tc ctx e with
+      | Ok (Prod ts) -> 
+          if 0 <= i && i < List.length ts then
+            Ok (List.nth ts i)
+          else 
+            Error (Printf.sprintf "Invalid injection %d from term %s on the basis of length" i (pp_term e))
+      | Ok t -> Error "Projecting from non-tuple"
+      | Error e -> Error e
+    )
+  | Inj (t, i, e) -> (
+      match t with 
+      | Sum ts -> 
+          if 0 <= i && i < List.length ts then 
+            match tc ctx e (List.nth ts i) with
+            | Ok _ -> Ok t
+            | Error e -> Error e
+          else 
+            Error "Injection annotated sum has invalid index"
+      | _ -> Error "Injection not annotated with sum"
+    )
+  | Case (e, arms) -> (
+      match infer_tc ctx e with
+      | Ok (Sum ts) -> (
+        let helper (t', (x, e')) = 
+          let new_ctx = Context.add x t' ctx in
+          infer_tc new_ctx e'
+        in
+        let res = List.map helper (List.combine ts arms) in
+        match Base.Result.all res with
+        | Ok ts -> 
+            if List.length ts = 0 then
+              raise (Failure "How did you make a void weary weary weary")
+            else
+              if List.fold_left (fun b t -> b && (t = List.nth ts 0)) true ts then
+                Ok (List.nth ts 0)
+              else 
+                Error "Branches of arms don't have the same type"
+        | _ -> raise (Failure "todo")
+        )
+      | Ok t -> Error "Argument to case is not a sum"
+      | Error e -> Error e
+    )
+  | Print (s, e) ->  infer_tc ctx e
+
 
 let check_type (e : term) (t : typ) = tc Context.empty e t
 
