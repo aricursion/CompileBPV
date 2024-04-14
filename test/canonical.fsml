@@ -1,3 +1,3 @@
 (* Canonical source file of all constructs that will be in our language *)
 
-fn (x : unit * unit) => fn (y : unit + unit + unit) => print "meow"; case y { a => inj[unit + unit](1)(<>) | b => inj[unit + unit](2)(<>) | c => split x {d.e. inj[unit + unit](1)(<>)}}
+fn (y : unit + unit + unit) => split x as d, e in inj[unit + unit](1)(d)

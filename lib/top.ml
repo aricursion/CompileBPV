@@ -1,5 +1,6 @@
 let compile (filename : string) = 
-  print_endline filename
+  let ast = Parse.parse filename in
+  print_endline (Ast.pp_term ast)
 
 let main () =
   let open Cmdliner in

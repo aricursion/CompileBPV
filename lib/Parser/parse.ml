@@ -18,14 +18,9 @@ let parse (filename : string) : Ast.term =
           try Parser.program Lexer.initial lexbuf with
           | _ -> failwith "Parse error.")
     in
-    if Error_msg.has_any_errors C0_lexer.errors
-    then (
-      Out_channel.prerr_endline "Lex error.";
-      raise Error_msg.Error)
+    if List.length !(Lexer.errors) > 0
+    then failwith "Lex error."
     else ast
   with
-  | Sys_error s ->
-    (* Probably file not found or permissions errors. *)
-    Out_channel.prerr_endline ("System error: " ^ s);
-    raise Error_msg.Error
+  | Sys_error s -> failwith ("System error: " ^ s)
 ;;
