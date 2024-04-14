@@ -19,6 +19,7 @@ let dec_constant s lexbuf =
 
 let var = ['A'-'Z' 'a'-'z' '_']['A'-'Z' 'a'-'z' '0'-'9' '_']*
 let dec_num = ("0" | ['1'-'9'](['0'-'9']*))
+let str = ['A'-'Z' 'a'-'z' '0'-'9' '_']*
 
 let ws = [' ' '\t' '\r' '\011' '\012']
 
@@ -63,6 +64,8 @@ rule initial = parse
   | dec_num as n { dec_constant n lexbuf }
 
   | var as name { T.Var (Variable.of_string name) }
+
+  | str as s { T.String s }
 
   | "(*" { comment 1 lexbuf }
   | "*)" { errors := "Unbalanced comments." :: !errors ;

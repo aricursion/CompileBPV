@@ -12,6 +12,8 @@
 %token Lambda Arrow
 %token Print Inj Split Case As In
 
+%right Arrow_typ
+
 %start program
 
 %type <Ast.term> term
@@ -95,6 +97,7 @@ typ :
       { Ast.Prod [] }
   | Void;
       { Ast.Sum [] }
+  (* asserting that products/sums are either nullary or at least binary *)
   | t = typ; Star; l = prodTyplist
       { Ast.Prod (t::l) }
   | t = typ; Plus; l = sumTyplist; 
@@ -118,7 +121,7 @@ term :
       { Ast.Ap (m, m1) } 
   | Inj; L_staple; typ = typ; R_staple; L_paren; i = Dec_const; R_paren; L_paren; m = term; R_paren; 
       { Ast.Inj (typ, i, m) }
-  | Case; m = term; R_brace; cases = cases; L_brace; 
+  | Case; m = term; L_brace; cases = cases; R_brace; 
       { Ast.Case (m, cases) }
   | Print; Quote; s = String; Quote; Semicolon; m = term; 
       { Ast.Print (s, m) }

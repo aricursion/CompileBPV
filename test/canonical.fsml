@@ -1,3 +1,4 @@
 (* Canonical source file of all constructs that will be in our language *)
 
-fn (y : unit + unit + unit) => split x as d, e in inj[unit + unit](1)(d)
+(fn (y : unit + unit + unit) => case y { a => inj[unit + unit](1)(<>) | b => inj[unit + unit](2)(<>) | c => split x as d, e in inj[unit + unit](1)(d)})
+<<>, <>>  
