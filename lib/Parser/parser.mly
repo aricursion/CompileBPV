@@ -31,7 +31,6 @@ program:
 typ : 
   | Unit;
       { Ast.Unit }
-  (* asserting that products/sums are either nullary or at least binary *)
   | t1 = typ; Star; t2 = typ;
       { Ast.Prod (t1, t2) }
   | t1 = typ; Plus; t2 = typ; 
