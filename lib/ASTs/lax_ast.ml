@@ -1,17 +1,19 @@
 type typ =
 | Arrow of typ * typ
-| Prod of typ list 
-| Sum of typ list
+| Prod of typ * typ 
+| Sum of typ * typ
+| Unit
 | TComp of typ
 
 type term =
 | Var of Variable.t
 | Lambda of Variable.t * typ * term
 | Ap of term * term
-| Tup of term list
-| Split of term * (Variable.t list * term)
+| Tup of term * term
+| Split of term * ((Variable.t * Variable.t) * term)
 | Inj of typ * int * term
-| Case of term * (Variable.t * term) list
+| Case of term * (Variable.t * term) * (Variable.t * term)
+| Check of term * term
 | Comp of exp
 
 and exp = 

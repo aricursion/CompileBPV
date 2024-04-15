@@ -32,23 +32,20 @@ let rec tc (ctx : typ Context.t) (e : term) (t : typ) =
       | Ok(t) -> Error (Printf.sprintf "First component of application %s is not a function and has type %s " (pp_term e) (pp_typ t))
       | Error e -> Error e
     )
-  | Tup es -> (
+  | Tup (e1, e2) -> (
       match t with 
-      | Prod ts -> (
-          if List.length ts = List.length es then
-            let res = List.map (fun (e, t) -> tc ctx e t) (List.combine es ts) in
-            match Base.Result.all res with
-            | Ok _ -> Ok(())
-            | Error e -> Error e
-          else
-            Error (Printf.sprintf "Term %s has type %s - tuple has incorrect length" (pp_term e) (pp_typ t))
+      | Prod (t1, t2) -> (
+        match (tc ctx e1 t1, tc ctx e2 t2) with
+        | (Ok _, Ok _) -> Ok(())
+        | (Error e, _) -> Error e
+        | (_, Error e) -> Error e
         )
       | _ -> Error (Printf.sprintf "Term %s has type %s" (pp_term e) (pp_typ t))
     )
-    | Split (m, (vars, e)) -> (
+    | Split (m, ((v1, v2), e)) -> (
       match infer_tc ctx m with
-      | Ok(Prod ts) -> 
-          let new_ctx = List.fold_left (fun ctx (t, var) -> Context.add var t ctx) ctx (List.combine ts vars) in
+      | Ok(Prod (t1, t2)) -> 
+          let new_ctx = Context.add v2 t2 (Context.add v1 t1 ctx) in
           tc new_ctx e t
       | Ok(t) -> Error (Printf.sprintf "Tried to split on term %s with type %s" (pp_term m) (pp_typ t))
       | Error e -> Error e
@@ -56,32 +53,32 @@ let rec tc (ctx : typ Context.t) (e : term) (t : typ) =
   | Inj (sum_t, i, e_inj) -> (
       if t = sum_t then
         match t with 
-        | Sum ts -> 
-          if 0 <= i && i < List.length ts then 
-            tc ctx e_inj (List.nth ts i)
+        | Sum (t1, t2) -> 
+          if i = 1 then (* injections are no longer zero indexed *)
+            tc ctx e_inj t1
+          else if i = 2 then
+            tc ctx e_inj t2
           else
             Error (Printf.sprintf "Injection into type %s has invalid index %i" (pp_typ sum_t) i)
         | _ -> Error (Printf.sprintf "Injection %s is not annotated with a sum - instead %s" (pp_term e) (pp_typ sum_t))
       else
         Error (Printf.sprintf "Expected type %s does not match type %s of expression %s" (pp_typ t) (pp_typ sum_t) (pp_term e_inj))
     )
-  | Case (e, arms) -> (
+  | Case (e, (v1, m1), (v2, m2)) -> (
       match infer_tc ctx e with
-      | Ok (Sum ts) -> 
-          if List.length ts = List.length arms then 
-            let helper (t', (x, e')) = 
-              let new_ctx = Context.add x t' ctx in
-              tc new_ctx e' t
-            in
-            let res = List.map helper (List.combine ts arms) in 
-            match Base.Result.all res with 
-            | Ok _ -> Ok(())
-            | Error e -> Error e
-          else 
-            Error "Number of arms in a case does not match the number of cases in the sum"
+      | Ok (Sum (t1, t2)) -> 
+        (match (tc (Context.add v1 t1 ctx) m1 t, tc (Context.add v2 t2 ctx) m2 t) with 
+        | (Ok _, Ok _) -> Ok(())
+        | (Error e, _) -> Error e
+        | (_, Error e) -> Error e)
       | Ok _ -> Error "Tried to case on a non-sum"
       | Error e -> Error e
     )
+  | Check (e, e1) ->
+    (match infer_tc ctx e with
+    | Ok(Unit) -> tc ctx e1 t
+    | Ok _ -> Error (Printf.sprintf "Expression being checked does not have unit type: `%s`" (Ast.pp_term e))
+    | Error e -> Error e)
   | Print (_, e) -> tc ctx e t
 
 and infer_tc (ctx : typ Context.t) (e : term ) = 
@@ -111,53 +108,54 @@ and infer_tc (ctx : typ Context.t) (e : term ) =
     | (Ok _, Error e) -> Error e
     | (Error e, _) -> Error e
     )
-  | Tup es -> (
-      let res = List.map (infer_tc ctx) es in
-      match Base.Result.all res with
-      | Ok ts -> Ok (Prod ts)
-      | Error e -> Error e
+  | Tup (e1, e2) -> (
+      match (infer_tc ctx e1, infer_tc ctx e2) with
+      | (Ok t1, Ok t2) -> Ok (Prod (t1, t2))
+      | (Error e, _) -> Error e
+      | (_, Error e) -> Error e
     )
-  | Split (m, (vars, e)) -> (
+  | Split (m, ((v1, v2), e)) -> (
       match infer_tc ctx m with
-      | Ok(Prod ts) -> 
-          let new_ctx = List.fold_left (fun ctx (t, var) -> Context.add var t ctx) ctx (List.combine ts vars) in
-          infer_tc new_ctx e
+      | Ok(Prod (t1, t2)) -> 
+          infer_tc (Context.add v2 t2 (Context.add v1 t1 ctx)) e
       | Ok(t) -> Error (Printf.sprintf "Tried to split on term %s with type %s" (pp_term m) (pp_typ t))
       | Error e -> Error e
     )
   | Inj (t, i, e) -> (
       match t with 
-      | Sum ts -> 
-          if 0 <= i && i < List.length ts then 
-            match tc ctx e (List.nth ts i) with
+      | Sum (t1, t2) -> 
+          if i = 1 then 
+            (match tc ctx e t1 with
             | Ok _ -> Ok t
-            | Error e -> Error e
+            | Error e -> Error e)
+          else if i = 2 then
+            (match tc ctx e t2 with
+            | Ok _ -> Ok t
+            | Error e -> Error e) 
           else 
             Error "Injection annotated sum has invalid index"
       | _ -> Error "Injection not annotated with sum"
     )
-  | Case (e, arms) -> (
+  | Case (e, (v1, m1), (v2, m2)) -> (
       match infer_tc ctx e with
-      | Ok (Sum ts) -> (
-        let helper (t', (x, e')) = 
-          let new_ctx = Context.add x t' ctx in
-          infer_tc new_ctx e'
-        in
-        let res = List.map helper (List.combine ts arms) in
-        match Base.Result.all res with
-        | Ok ts -> 
-            if List.length ts = 0 then
-              raise (Failure "How did you make a void weary weary weary")
-            else
-              if List.fold_left (fun b t -> b && (t = List.nth ts 0)) true ts then
-                Ok (List.nth ts 0)
-              else 
-                Error "Branches of arms don't have the same type"
-        | _ -> raise (Failure "todo")
+      | Ok (Sum (t1, t2)) -> (
+        match (infer_tc (Context.add v1 t1 ctx) m1, infer_tc (Context.add v2 t2 ctx) m2) with
+        | (Ok t, Ok t') -> 
+            if t = t' then
+              Ok t
+            else 
+              Error "Branches of case arms don't have the same type"
+        | (Error e, _) -> Error e
+        | (_, Error e) -> Error e
         )
       | Ok _ -> Error "Argument to case is not a sum"
       | Error e -> Error e
     )
+  | Check (e, e1) -> 
+    (match infer_tc ctx e with
+    | Ok(Unit) -> infer_tc ctx e1
+    | Ok _ -> Error (Printf.sprintf "Term being checked does not have unit type: `%s`" (Ast.pp_term e))
+    | Error e -> Error e)
   | Print (_, e) ->  infer_tc ctx e
 
 
