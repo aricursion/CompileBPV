@@ -55,6 +55,7 @@ rule initial = parse
   | "inj"     { T.Inj }
   | "split"   { T.Split }
   | "case"    { T.Case }
+  | "check"   { T.Check }
 
   | "as"      { T.As }
   | "in"      { T.In }

@@ -12,6 +12,7 @@ and comp_type =
 type value_term =
 | Var of Variable.t
 | Tensor of value_term * value_term
+| Triv
 | Inj of value_type * int * value_term
 | Susp of comp_term
 

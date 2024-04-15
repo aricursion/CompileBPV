@@ -32,6 +32,7 @@ let rec tc (ctx : typ Context.t) (e : term) (t : typ) =
       | Ok(t) -> Error (Printf.sprintf "First component of application %s is not a function and has type %s " (pp_term e) (pp_typ t))
       | Error e -> Error e
     )
+  | Triv -> if t = Unit then Ok(()) else Error "Somehow <> doesn't have type unit"
   | Tup (e1, e2) -> (
       match t with 
       | Prod (t1, t2) -> (
@@ -108,6 +109,7 @@ and infer_tc (ctx : typ Context.t) (e : term ) =
     | (Ok _, Error e) -> Error e
     | (Error e, _) -> Error e
     )
+  | Triv -> Ok(Unit)
   | Tup (e1, e2) -> (
       match (infer_tc ctx e1, infer_tc ctx e2) with
       | (Ok t1, Ok t2) -> Ok (Prod (t1, t2))

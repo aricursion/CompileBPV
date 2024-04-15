@@ -12,6 +12,7 @@ let rec elab m =
   | Ast.Var x -> Var x
   | Ast.Lambda (x, t, e) -> Lambda (x, trans_typ t, elab e)
   | Ast.Ap (e1, e2) -> Ap (elab e1, elab e2)
+  | Ast.Triv -> Triv
   | Ast.Tup (e1, e2) -> Tup (elab e1, elab e2)
   | Ast.Split (m, (vars, e)) -> Split (elab m, (vars, elab e))
   | Ast.Inj (t, i, e) -> Inj (trans_typ t, i, elab e)

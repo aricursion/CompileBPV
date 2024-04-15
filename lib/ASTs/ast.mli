@@ -8,6 +8,7 @@ type term =
 | Var of Variable.t
 | Lambda of Variable.t * typ *  term
 | Ap of term * term
+| Triv
 | Tup of term * term
 | Split of term * ((Variable.t * Variable.t) * term)
 | Check of term * term

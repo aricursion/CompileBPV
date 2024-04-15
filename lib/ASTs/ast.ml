@@ -10,6 +10,7 @@ type term =
 | Var of Variable.t
 | Lambda of Variable.t * typ *  term
 | Ap of term * term
+| Triv
 | Tup of term * term
 | Split of term * ((Variable.t * Variable.t) * term)
 | Check of term * term
@@ -29,6 +30,7 @@ let rec pp_term e =
   | Case (t, (v1, m1), (v2, m2)) -> sprintf "case %s { %s => %s | %s => %s }" (pp_term t) (Variable.pp_var v1) (pp_term m1) (Variable.pp_var v2) (pp_term m2)
   | Print (s, e) -> "print " ^ s ^"; " ^ pp_term e 
   | Check (m, m1) -> "check " ^ (pp_term m) ^ " in " ^ (pp_term m1)
+  | Triv -> "<>"
 
 let rec pp_typ t =
   match t with
