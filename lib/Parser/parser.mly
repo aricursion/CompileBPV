@@ -8,7 +8,7 @@
 %token L_bracket R_bracket
 %token L_staple R_staple
 %token Pipe
-%token Colon Semicolon Comma Quote
+%token Colon Semicolon Comma
 %token Lambda Arrow
 %token Print Inj Split Case As In
 
@@ -123,7 +123,7 @@ term :
       { Ast.Inj (typ, i, m) }
   | Case; m = term; L_brace; cases = cases; R_brace; 
       { Ast.Case (m, cases) }
-  | Print; Quote; s = String; Quote; Semicolon; m = term; 
+  | Print; s = String; Semicolon; m = term; 
       { Ast.Print (s, m) }
   ;
 

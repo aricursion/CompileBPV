@@ -19,7 +19,7 @@ let dec_constant s lexbuf =
 
 let var = ['A'-'Z' 'a'-'z' '_']['A'-'Z' 'a'-'z' '0'-'9' '_']*
 let dec_num = ("0" | ['1'-'9'](['0'-'9']*))
-let str = ['A'-'Z' 'a'-'z' '0'-'9' '_']*
+let str = ['"']['A'-'Z' 'a'-'z' '0'-'9' '_' '!' '@' '#' '$' '%' '^' '&' '~' '-' '?']*['"']
 
 let ws = [' ' '\t' '\r' '\011' '\012']
 
@@ -41,7 +41,6 @@ rule initial = parse
   | ':' { T.Colon }
   | ';' { T.Semicolon }
   | ',' { T.Comma }
-  | '"' { T.Quote }
 
   | "=>"  { T.Arrow }
   | "fn"  { T.Lambda }
