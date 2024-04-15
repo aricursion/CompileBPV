@@ -39,11 +39,21 @@ typ :
       { Ast.Arrow (t1, t2) }
   ;
 
-term :
+appTerm :
+  | a = atom;
+    { a }
+  | m = appTerm ; m1 = atom;
+    { Ast.Ap (m, m1) }
+
+atom :
   | L_paren; m = term; R_paren;
       { m }
   | var = Var;
       { Ast.Var var }
+
+term :
+  | m = appTerm;
+      { m }
   | L_bracket; R_bracket; 
       { Ast.Triv }  
   | L_bracket; m1 = term; Comma; m2 = term; R_bracket; 
