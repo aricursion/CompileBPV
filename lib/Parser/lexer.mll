@@ -50,7 +50,6 @@ rule initial = parse
   | '+'  { T.Plus }
 
   | "unit"    { T.Unit }
-  | "void"    { T.Void }
 
   | "print"   { T.Print }
   | "inj"     { T.Inj }

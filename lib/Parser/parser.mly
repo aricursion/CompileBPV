@@ -2,7 +2,7 @@
 %token <int> Dec_const
 %token <Variable.t> Var
 %token <string> String
-%token Plus Star Arrow_typ Unit Void
+%token Plus Star Arrow_typ Unit
 %token L_brace R_brace
 %token L_paren R_paren
 %token L_bracket R_bracket
@@ -95,8 +95,6 @@ sumTypListFollow :
 typ : 
   | Unit;
       { Ast.Prod [] }
-  | Void;
-      { Ast.Sum [] }
   (* asserting that products/sums are either nullary or at least binary *)
   | t = typ; Star; l = prodTyplist
       { Ast.Prod (t::l) }
