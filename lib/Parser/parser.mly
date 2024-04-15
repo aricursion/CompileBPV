@@ -50,12 +50,12 @@ atom :
       { m }
   | var = Var;
       { Ast.Var var }
+  | L_bracket; R_bracket;
+      { Ast.Triv }
 
 term :
   | m = appTerm;
       { m }
-  | L_bracket; R_bracket; 
-      { Ast.Triv }  
   | L_bracket; m1 = term; Comma; m2 = term; R_bracket; 
       { Ast.Tup (m1, m2) }
   | Split; m = term; As; v1 = Var; Comma; v2 = Var; In; body = term
