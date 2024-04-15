@@ -1,5 +1,5 @@
 {
-open Core.Caml.Printf
+open Stdlib.Printf
 
 module T = Parser
 
