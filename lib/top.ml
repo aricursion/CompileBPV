@@ -1,6 +1,9 @@
 let compile (filename : string) = 
   let ast = Parse.parse filename in
-  print_endline (Ast.pp_term ast)
+  print_endline (Ast.pp_term ast);
+  match Tc_ml.infer_type ast with
+  | Ok tau -> print_endline (Ast.pp_typ tau)
+  | Error s -> failwith s
 
 let main () =
   let open Cmdliner in
