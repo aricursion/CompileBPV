@@ -13,6 +13,8 @@
 %token Print Inj Split Case As In Check
 
 %right Arrow_typ
+%right Star
+%right Plus
 
 %start program
 
@@ -31,6 +33,8 @@ program:
 typ : 
   | Unit;
       { Ast.Unit }
+  | L_paren; t = typ; R_paren;
+      { t }  
   | t1 = typ; Star; t2 = typ;
       { Ast.Prod (t1, t2) }
   | t1 = typ; Plus; t2 = typ; 
