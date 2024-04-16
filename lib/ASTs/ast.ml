@@ -22,7 +22,7 @@ type term =
 let rec pp_term e = 
   match e with 
   | Var x -> Variable.pp_var x
-  | Lambda (x, _, e) -> "\\" ^  Variable.pp_var x ^ "." ^ pp_term e
+  | Lambda (x, _, e) -> "λ" ^  Variable.pp_var x ^ "." ^ pp_term e
   | Ap (e1, e2) -> "ap(" ^ pp_term e1 ^ "," ^ pp_term e2 ^ ")"
   | Tup (e1, e2) -> sprintf "<%s, %s>" (pp_term e1) (pp_term e2)
   | Split (e1, ((v1, v2), e2)) -> sprintf "split %s as %s, %s in %s" (pp_term e1) (Variable.pp_var v1) (Variable.pp_var v2) (pp_term e2)
