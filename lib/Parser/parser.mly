@@ -21,6 +21,8 @@
 %type <Ast.term> term
 %type <Ast.typ> typ
 %type <Ast.term> program
+%type <Ast.term> atom
+%type <Ast.term> appTerm
 
 %%
 
@@ -34,7 +36,7 @@ typ :
   | Unit;
       { Ast.Unit }
   | L_paren; t = typ; R_paren;
-      { t }  
+      { t }
   | t1 = typ; Star; t2 = typ;
       { Ast.Prod (t1, t2) }
   | t1 = typ; Plus; t2 = typ; 
@@ -66,8 +68,6 @@ term :
       { Ast.Split (m, ((v1, v2), body)) }
   | Lambda; L_paren; var = Var; Colon; typ = typ; R_paren; Arrow; body = term;
       { Ast.Lambda (var, typ, body) }  
-  | L_paren; m = term; R_paren; m1 = term;
-      { Ast.Ap (m, m1) } 
   | Inj; L_staple; typ = typ; R_staple; L_paren; i = Dec_const; R_paren; L_paren; m = term; R_paren; 
       { Ast.Inj (typ, i, m) }
   | Case; m = term; L_brace; v1 = Var; Arrow; m1 = term; Pipe; v2 = Var; Arrow; m2 = term; R_brace; 
