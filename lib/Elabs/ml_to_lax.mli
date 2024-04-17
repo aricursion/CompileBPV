@@ -1,1 +1,0 @@
-val elab : Ast.term -> Lax_ast.term
