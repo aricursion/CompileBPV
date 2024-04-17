@@ -1,5 +1,6 @@
 open Cbpv_ast
 
+<<<<<<< HEAD
 let rec trans_typ (t : Ast.typ) =
   match t with
   | Ast.Arrow(t1, t2) -> U(Arr(trans_typ t1, F (trans_typ t2)))
@@ -20,3 +21,17 @@ let rec elab (e : Ast.term) =
   | Ast.Case (e, (x, e1), (y, e2)) -> Ret Triv
   | Ast.Print (s, e) -> Ret Triv
 
+=======
+let rec elab (t : Ast.term) : comp_term = 
+  match t with
+  | Ast.Var x -> Ret (Var x)
+  | Lambda _ -> failwith "unimplemented"
+  | Ap _ -> failwith "unimplemented"
+  | Triv -> failwith "unimplemented"
+  | Tup _ -> failwith "unimplemented"
+  | Split _ -> failwith "unimplemented"
+  | Check _ -> failwith "unimplemented"
+  | Inj _ -> failwith "unimplemented"
+  | Case _ -> failwith "unimplemented"
+  | Print _ -> failwith "unimplemented"
+>>>>>>> 321bad1c4e676ca494473caee879f0648af5543a
