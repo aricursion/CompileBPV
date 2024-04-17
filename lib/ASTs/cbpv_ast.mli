@@ -27,3 +27,4 @@ and comp_term =
 | Split of value_term * (Variable.t * Variable.t) * comp_term
 | Case of value_term * (Variable.t * comp_term) * (Variable.t * comp_term)
 | Check of value_term * comp_term
+| Print of string * comp_term
