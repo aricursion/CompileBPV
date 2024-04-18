@@ -8,6 +8,9 @@ and comp_type =
 | Arr of value_type * comp_type
 | F of value_type
 
+type typ = CompTyp of comp_type | ValTyp of value_type
+
+
 type value_term =
 | Var of Variable.t
 | TensorProd of value_term * value_term
@@ -25,3 +28,10 @@ and comp_term =
 | Case of value_term * (Variable.t * comp_term) * (Variable.t * comp_term)
 | Check of value_term * comp_term
 | Print of string
+
+type term = Comp of comp_term | Val of value_term
+
+
+val pp_typ : typ -> string
+
+val pp_term : term -> string
