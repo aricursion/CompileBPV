@@ -7,10 +7,6 @@ type value_type =
 and comp_type =
 | Arr of value_type * comp_type
 | F of value_type
-<<<<<<< HEAD
-
-=======
->>>>>>> 321bad1c4e676ca494473caee879f0648af5543a
 
 type value_term =
 | Var of Variable.t
@@ -22,11 +18,10 @@ type value_term =
 and comp_term = 
 | Ret of value_term
 | Bind of comp_term * Variable.t * comp_term
-| Tuple of comp_term * comp_term
-| Proj of int * comp_term
 | Lam of Variable.t * value_type * comp_term
 | Ap of comp_term * value_term
 | Force of value_term
 | Split of value_term * ((Variable.t * Variable.t) * comp_term)
 | Case of value_term * (Variable.t * comp_term) * (Variable.t * comp_term)
 | Check of value_term * comp_term
+| Print of string
