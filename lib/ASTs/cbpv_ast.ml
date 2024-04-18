@@ -59,7 +59,7 @@ let rec pp_val_term v =
 and pp_comp_term c = 
   match c with
   | Ret v -> "Ret(" ^ pp_val_term v ^ ")"
-  | Bind (c, _, c1) -> "Bind(" ^ pp_comp_term c ^ ";" ^ " " ^ pp_comp_term c1 ^ ")"
+  | Bind (c, x, c1) -> "Bind(" ^ pp_comp_term c ^ "; " ^ Variable.pp_var x ^ "." ^ pp_comp_term c1 ^ ")"
   | Lam (x, t, c) -> "\\(" ^ Variable.pp_var x ^ ":" ^ pp_val_typ t ^ ")." ^ pp_comp_term c
   | Ap (c1, v) -> "Ap(" ^ pp_comp_term c1 ^ "," ^ pp_val_term v ^ ")"
   | Force v -> "Force(" ^ pp_val_term v ^ ")"

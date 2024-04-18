@@ -8,4 +8,4 @@ let of_string s = s
 
 let compare = String.compare 
 
-let pp_var x = x
+let pp_var x = "var_" ^ x
