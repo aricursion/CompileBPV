@@ -2,7 +2,9 @@ let compile (filename : string) =
   let ast = Parse.parse filename in
   print_endline (Ast.pp_term ast);
   match Tc_ml.infer_type ast with
-  | Ok tau -> print_endline (Ast.pp_typ tau)
+  | Ok tau -> 
+      print_endline (Ast.pp_typ tau) ;
+      print_endline (Cbpv_ast.pp_term (Cbpv_ast.Comp (Ml_to_cbpv.elab ast)))
   | Error s -> failwith s
 
 let main () =
