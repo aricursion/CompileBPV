@@ -10,10 +10,11 @@ let rec trans_typ (t : Ast.typ) =
 let rec elab (e : Ast.term) =
   match e with 
   | Ast.Var x -> Ret (Var x)
-  | Ast.Lambda (x, t, e) -> Lam (x, trans_typ t, elab e)
+  | Ast.Lambda (x, t, e) -> Ret(Susp (Lam (x, trans_typ t, elab e)))
   | Ast.Ap (e1, e2) -> 
+    let f = Variable.new_var() in
     let x = Variable.new_var() in
-    Bind (elab e2, x, Ap(elab e1, Var x))
+    Bind (elab e1, f, Bind (elab e2, x, Ap(Force (Var f), Var x)))
   | Ast.Triv -> Ret Triv
   | Ast.Tup (e1, e2) -> 
       let x = Variable.new_var() in
