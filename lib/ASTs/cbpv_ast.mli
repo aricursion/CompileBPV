@@ -10,7 +10,6 @@ and comp_type =
 
 type typ = CompTyp of comp_type | ValTyp of value_type
 
-
 type value_term =
 | Var of Variable.t
 | TensorProd of value_term * value_term
