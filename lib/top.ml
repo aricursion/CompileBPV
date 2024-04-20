@@ -4,7 +4,11 @@ let compile (filename : string) =
   match Tc_ml.infer_type ast with
   | Ok tau -> 
       print_endline (Ast.pp_typ tau) ;
-      print_endline (Cbpv_ast.pp_term (Cbpv_ast.Comp (Ml_to_cbpv.elab ast)))
+      let cbpv_ast = Ml_to_cbpv.elab ast in
+      print_endline (Cbpv_ast.pp_term (Cbpv_ast.Comp cbpv_ast)) ;
+      (match Tc_cbpv.infer_type cbpv_ast with
+      | Ok tau' -> print_endline (Cbpv_ast.pp_typ (CompTyp tau'))
+      | Error s -> failwith s)
   | Error s -> failwith s
 
 let main () =
