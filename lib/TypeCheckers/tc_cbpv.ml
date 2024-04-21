@@ -1,5 +1,5 @@
-open Cbpv_ast
-
+ open Cbpv_ast
+(*
 (* context should only contain variables with value type *)
 module Context = Map.Make(Variable)
 
@@ -101,8 +101,8 @@ and tc_val (ctx : value_type Context.t) (v : value_term) (t : value_type) : (uni
 and tc_comp (ctx : value_type Context.t) (c : comp_term) (t : comp_type) : (unit, string) result =
   match infer_tc_comp ctx c with
   | Ok(t') -> if t = t' then Ok(()) else Error (Printf.sprintf "Expected %s to have type %s, got %s" (pp_term (Comp c)) (pp_typ (CompTyp t)) (pp_typ (CompTyp t')))
-  | Error e -> Error e
+  | Error e -> Error e *)
 
-let check_type (cbpv_ast : comp_term) (t : comp_type) = tc_comp Context.empty cbpv_ast t
+let check_type (_ : comp_term) (_ : comp_type) = raise (Failure "foo")
 
-let infer_type (cbpv_ast : comp_term) = infer_tc_comp Context.empty cbpv_ast
+let infer_type (_ : comp_term) = raise (Failure "foo")

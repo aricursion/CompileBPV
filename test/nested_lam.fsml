@@ -1,0 +1,1 @@
+fn (x : unit) => (fn (y : unit) => <x, y>)

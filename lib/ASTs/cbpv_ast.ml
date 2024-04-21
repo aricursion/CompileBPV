@@ -1,6 +1,6 @@
 type value_type = 
-| Tensor of value_type * value_type
-| Sum of value_type * value_type
+| Tensor of value_type list
+| Sum of value_type list
 | Unit
 | U of comp_type
 
@@ -12,7 +12,7 @@ type typ = CompTyp of comp_type | ValTyp of value_type
 
 type value_term =
 | Var of Variable.t
-| TensorProd of value_term * value_term
+| TensorProd of value_term list
 | Triv
 | Inj of value_type * int * value_term
 | Susp of comp_term
@@ -23,18 +23,17 @@ and comp_term =
 | Lam of Variable.t * value_type * comp_term
 | Ap of comp_term * value_term
 | Force of value_term
-| Split of value_term * ((Variable.t * Variable.t) * comp_term)
-| Case of value_term * (Variable.t * comp_term) * (Variable.t * comp_term)
+| Split of value_term * (Variable.t list * comp_term)
+| Case of value_term * (Variable.t * comp_term) list
 | Check of value_term * comp_term
 | Print of string
 
 type term = Comp of comp_term | Val of value_term
 
-
 let rec pp_val_typ (t: value_type) =
   match t with 
-  | Tensor (t1, t2) -> pp_val_typ t1 ^ " x " ^ pp_val_typ t2
-  | Sum (t1, t2) -> pp_val_typ t1 ^ " + " ^ pp_val_typ t2
+  | Tensor ts ->  String.concat " ⊗ " (List.map pp_val_typ ts)
+  | Sum sums ->  String.concat " + " (List.map pp_val_typ sums)
   | Unit -> "Unit"
   | U t -> "U(" ^ pp_comp_typ t ^ ")"
 
@@ -51,20 +50,20 @@ let pp_typ t =
 let rec pp_val_term v =
   match v with 
   | Var x -> Variable.pp_var x
-  | TensorProd (v1, v2) -> "(" ^ pp_val_term v1 ^ "," ^ pp_val_term v2 ^ ")"
-  | Triv -> "()"
-  | Inj (_, i, v) -> "inj" ^ string_of_int i ^ "(" ^ pp_val_term v ^")"
+  | TensorProd vs -> "<" ^ String.concat "," (List.map pp_val_term vs) ^ ">"
+  | Triv -> "<>"
+  | Inj (_, i, v) -> Printf.sprintf "inj%d (%s)" i (pp_val_term v)
   | Susp c -> "Susp(" ^ pp_comp_term c ^ ")"
 
 and pp_comp_term c = 
   match c with
   | Ret v -> "Ret(" ^ pp_val_term v ^ ")"
   | Bind (c, x, c1) -> "Bind(" ^ pp_comp_term c ^ "; " ^ Variable.pp_var x ^ "." ^ pp_comp_term c1 ^ ")"
-  | Lam (x, t, c) -> "\\(" ^ Variable.pp_var x ^ ":" ^ pp_val_typ t ^ ")." ^ pp_comp_term c
+  | Lam (x, t, c) -> "λ(" ^ Variable.pp_var x ^ ":" ^ pp_val_typ t ^ ")." ^ pp_comp_term c
   | Ap (c1, v) -> "Ap(" ^ pp_comp_term c1 ^ "," ^ pp_val_term v ^ ")"
   | Force v -> "Force(" ^ pp_val_term v ^ ")"
-  | Split (v, ((x, y), c)) -> "Split(" ^ pp_val_term v ^ "; " ^ Variable.pp_var x ^ "." ^ Variable.pp_var y ^ "." ^ pp_comp_term c ^ ")"
-  | Case (v, (x, c1), (y, c2)) -> "Case(" ^ pp_val_term v ^ "; " ^ Variable.pp_var x ^ "." ^ pp_comp_term c1 ^ "; " ^ Variable.pp_var y ^ "." ^ pp_comp_term c2 ^ ")"
+  | Split (v, (vars, c)) -> "Split(" ^ pp_val_term v ^ "; " ^  String.concat "." (List.map Variable.pp_var vars) ^"." ^ pp_comp_term c ^ ")"
+  | Case (v, arms) -> "Case(" ^ pp_val_term v ^ "; " ^ ";" ^ String.concat ";" (List.map (fun (x, c) -> Variable.pp_var x^ "." ^ pp_comp_term c) arms)^ ")"
   | Check (v, c) -> "Check(" ^ pp_val_term v ^ ";" ^ pp_comp_term c ^ ")"
   | Print s -> "Print(" ^ s ^ ")"
 
