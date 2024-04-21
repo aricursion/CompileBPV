@@ -15,7 +15,7 @@ let rec elab (e : Ast.term) =
     let f = Variable.new_var() in
     let x = Variable.new_var() in
     Bind (elab e1, f, Bind (elab e2, x, Ap(Force (Var f), Var x)))
-  | Ast.Triv -> Ret Triv
+  | Ast.Triv -> Ret (TensorProd [])
   | Ast.Tup (e1, e2) -> 
       let x = Variable.new_var() in
       let y = Variable.new_var() in 

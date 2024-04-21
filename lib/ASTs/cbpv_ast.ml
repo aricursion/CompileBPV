@@ -13,7 +13,6 @@ type typ = CompTyp of comp_type | ValTyp of value_type
 type value_term =
 | Var of Variable.t
 | TensorProd of value_term list
-| Triv
 | Inj of value_type * int * value_term
 | Susp of comp_term
 
@@ -51,7 +50,6 @@ let rec pp_val_term v =
   match v with 
   | Var x -> Variable.pp_var x
   | TensorProd vs -> "<" ^ String.concat "," (List.map pp_val_term vs) ^ ">"
-  | Triv -> "<>"
   | Inj (_, i, v) -> Printf.sprintf "inj%d (%s)" i (pp_val_term v)
   | Susp c -> "Susp(" ^ pp_comp_term c ^ ")"
 

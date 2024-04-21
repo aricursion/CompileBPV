@@ -13,7 +13,6 @@ type typ = CompTyp of comp_type | ValTyp of value_type
 type value_term =
 | Var of Variable.t
 | TensorProd of value_term list
-| Triv
 | Inj of value_type * int * value_term
 | Susp of comp_term
 
