@@ -2,7 +2,7 @@ open Cbpv_ast
 
 let rec trans_typ (t : Ast.typ) =
   match t with
-  | Ast.Arrow(t1, t2) -> U(Arr(trans_typ t1, F (trans_typ t2)))
+  | Ast.Arrow (t1, t2) -> U(Arr(trans_typ t1, F (trans_typ t2)))
   | Ast.Prod (t1, t2) -> Tensor [ trans_typ t1; trans_typ t2 ]
   | Ast.Sum (t1, t2) -> Sum [trans_typ t1; trans_typ t2]
   | Ast.Unit -> Unit
