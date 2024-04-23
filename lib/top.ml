@@ -7,7 +7,9 @@ let compile (filename : string) =
       let cbpv_ast = Ml_to_cbpv.elab ast in
       print_endline (Cbpv_ast.pp_term (Cbpv_ast.Comp cbpv_ast)) ;
       (match Tc_cbpv.infer_type cbpv_ast with
-      | Ok tau' -> print_endline (Cbpv_ast.pp_typ (CompTyp tau'))
+      | Ok tau' -> print_endline (Cbpv_ast.pp_typ (CompTyp tau')) ;
+        let final = Interpreter.interpret cbpv_ast in
+        print_endline (Printf.sprintf "Returned with value %s" (Cbpv_ast.pp_term (Val final)))
       | Error s -> failwith s)
   | Error s -> failwith s
 
