@@ -1,6 +1,6 @@
- open Cbpv_ast
-(*
-context should only contain variables with value type *)
+open Cbpv_ast
+
+(* context should only contain variables with value type *)
 module Context = Map.Make(Variable)
 
 let rec infer_tc_val (ctx : value_type Context.t) (v : value_term) : (value_type, string) result =
