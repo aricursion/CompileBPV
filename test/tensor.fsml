@@ -1,0 +1,2 @@
+(* testing to see whether I implemented the dynamics of products correctly *)
+<print "meow1"; <>, print "meow2"; split (print "meow3"; <<>, <>>) as x1, x2 in x1>
