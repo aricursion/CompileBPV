@@ -5,7 +5,7 @@ let rec trans_typ (t : Ast.typ) =
   | Ast.Arrow (t1, t2) -> U(Arr(trans_typ t1, F (trans_typ t2)))
   | Ast.Prod (t1, t2) -> Tensor [ trans_typ t1; trans_typ t2 ]
   | Ast.Sum (t1, t2) -> Sum [trans_typ t1; trans_typ t2]
-  | Ast.Unit -> Unit
+  | Ast.Unit -> Tensor []
 
 let rec elab (e : Ast.term) =
   match e with 

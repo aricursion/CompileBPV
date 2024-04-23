@@ -1,7 +1,6 @@
 type value_type = 
 | Tensor of value_type list
 | Sum of value_type list
-| Unit
 | U of comp_type
 
 and comp_type =
@@ -31,9 +30,9 @@ type term = Comp of comp_term | Val of value_term
 
 let rec pp_val_typ (t: value_type) =
   match t with 
-  | Tensor ts ->  String.concat " ⊗ " (List.map pp_val_typ ts)
-  | Sum sums ->  String.concat " + " (List.map pp_val_typ sums)
-  | Unit -> "Unit"
+  | Tensor ts ->  
+    if List.length ts = 0 then "unit" else String.concat " ⊗  " (List.map pp_val_typ ts)
+  | Sum sums -> String.concat " + " (List.map pp_val_typ sums)
   | U t -> "U(" ^ pp_comp_typ t ^ ")"
 
 and pp_comp_typ (t : comp_type) =

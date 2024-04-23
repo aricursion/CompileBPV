@@ -1,6 +1,6 @@
  open Cbpv_ast
 (*
-(* context should only contain variables with value type *)
+context should only contain variables with value type *)
 module Context = Map.Make(Variable)
 
 let rec infer_tc_val (ctx : value_type Context.t) (v : value_term) : (value_type, string) result =
@@ -10,24 +10,22 @@ let rec infer_tc_val (ctx : value_type Context.t) (v : value_term) : (value_type
       | Some(t') -> Ok(t')
       | None -> Error (Printf.sprintf "Variable %s is not in the context" (Variable.pp_var x))
     )
-  | TensorProd (v1, v2) -> (
-    (match (infer_tc_val ctx v1, infer_tc_val ctx v2) with
-      | (Ok t1, Ok t2) -> Ok(Tensor(t1, t2))
-      | (Error e, _) -> Error e
-      | (_, Error e) -> Error e)
+  | TensorProd vs -> (
+    let inferTys = List.map (infer_tc_val ctx) vs in 
+    (match Base.Result.all inferTys with
+      | Ok ts -> Ok(Tensor(ts))
+      | Error e -> Error e)
     )
-  | Triv -> Ok(Unit)
   | Inj (sum_t, i, v_inj) -> (
     match sum_t with
-    | Sum (t1, t2) ->
+    | Sum ts ->
       (match infer_tc_val ctx v_inj with
       | Ok(t) -> 
-        if i = 1 then
-          if t = t1 then Ok(sum_t) else Error (Printf.sprintf "Type of expression being injected does not match corresponding component of sum type: %s" (pp_term (Val v)))
-        else if i = 2 then
-          if t = t2 then Ok(sum_t) else Error (Printf.sprintf "Type of expression being injected does not match corresponding component of sum type: %s" (pp_term (Val v)))
-        else 
-          Error (Printf.sprintf "Type of expression being injected does not match corresponding component of sum type: %s" (pp_term (Val v)))
+        (* sums are still one indexed *)
+        if 0 < i || i >= (List.length ts) then
+        let t' = List.nth ts (i - 1) in
+          if t = t' then Ok(sum_t) else Error (Printf.sprintf "Type of expression being injected does not match corresponding component of sum type: %s" (pp_term (Val v)))
+        else Error (Printf.sprintf "Index out of bounds for inject: %s" (pp_term (Val v)))
       | Error e -> Error e)
     | _ -> Error (Printf.sprintf "Injection is not annotated with sum type: %s" (pp_term (Val v)))
     )
@@ -68,30 +66,35 @@ and infer_tc_comp (ctx : value_type Context.t) (c : comp_term) : (comp_type, str
     | Ok(U ct) -> Ok(ct)
     | Ok(t') -> Error (Printf.sprintf "Value being forced %s does not have U type -- instead %s" (pp_term (Val v)) (pp_typ (ValTyp t')))
     | Error e -> Error e)
-  | Split (v, ((x1, x2), c')) -> (
+  | Split (v, (xs, c')) -> (
     match infer_tc_val ctx v with
-    | Ok(Tensor (t1, t2)) -> 
-        let new_ctx = Context.add x2 t2 (Context.add x1 t1 ctx) in
+    | Ok(Tensor ts) -> 
+        let new_ctx = List.fold_left (fun acc (x, t) -> Context.add x t acc) ctx (List.combine xs ts) in
         infer_tc_comp new_ctx c'
     | Ok(t) -> Error (Printf.sprintf "Tried to split on term %s with type %s" (pp_term (Val v)) (pp_typ (ValTyp t)))
     | Error e -> Error e
   )
-  | Case (v, (x1, c1), (x2, c2)) -> (
+  | Case (v, arms) -> (
       match infer_tc_val ctx v with
-      | Ok (Sum (t1, t2)) -> 
-        (match (infer_tc_comp (Context.add x1 t1 ctx) c1, infer_tc_comp (Context.add x2 t2 ctx) c2) with 
-        | (Ok t, Ok t') -> if t = t' then Ok(t) else Error (Printf.sprintf "Branches of case do not have same type: %s" (pp_term (Comp c)))
-        | (Error e, _) -> Error e
-        | (_, Error e) -> Error e)
+      | Ok (Sum ts) -> 
+        let armTyps = List.map (fun ((x, c), t) -> infer_tc_comp (Context.add x t ctx) c) (List.combine arms ts) in
+        (match Base.Result.all armTyps with
+        | (Ok ts') -> 
+          if List.length ts' = 0 then
+            Error "You somehow got a void which shouldn't be possible"
+          else
+            if List.for_all (fun t -> (t = List.nth ts' 0)) ts' then
+              Ok (List.nth ts' 0) else Error (Printf.sprintf "Branches of case do not have same type: %s" (pp_term (Comp c)))
+        | Error e -> Error e)
       | Ok _ -> Error (Printf.sprintf "Tried to case on a non-sum: %s" (pp_term (Comp c)))
       | Error e -> Error e
     )
   | Check (v, c') ->
     (match infer_tc_val ctx v with
-    | Ok(Unit) -> infer_tc_comp ctx c'
+    | Ok(Tensor []) -> infer_tc_comp ctx c'
     | Ok _ -> Error (Printf.sprintf "Expression being checked does not have unit type: `%s`" (pp_term (Val v)))
     | Error e -> Error e)
-  | Print _ -> Ok(F(Unit))
+  | Print _ -> Ok(F(Tensor []))
 
 and tc_val (ctx : value_type Context.t) (v : value_term) (t : value_type) : (unit, string) result =
   match infer_tc_val ctx v with
@@ -101,8 +104,8 @@ and tc_val (ctx : value_type Context.t) (v : value_term) (t : value_type) : (uni
 and tc_comp (ctx : value_type Context.t) (c : comp_term) (t : comp_type) : (unit, string) result =
   match infer_tc_comp ctx c with
   | Ok(t') -> if t = t' then Ok(()) else Error (Printf.sprintf "Expected %s to have type %s, got %s" (pp_term (Comp c)) (pp_typ (CompTyp t)) (pp_typ (CompTyp t')))
-  | Error e -> Error e *)
+  | Error e -> Error e
 
-let check_type (_ : comp_term) (_ : comp_type) = raise (Failure "foo")
+let check_type (c : comp_term) (t : comp_type) = tc_comp Context.empty c t
 
-let infer_type (_ : comp_term) = raise (Failure "foo")
+let infer_type (c : comp_term) = infer_tc_comp Context.empty c

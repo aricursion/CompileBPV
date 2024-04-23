@@ -1,7 +1,6 @@
 type value_type = 
 | Tensor of value_type list
 | Sum of value_type list
-| Unit
 | U of comp_type
 
 and comp_type =
