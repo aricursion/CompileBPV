@@ -14,7 +14,19 @@ let dec_constant s lexbuf =
       errors := (sprintf "Cannot parse decimal constant `%s`" (text lexbuf)) :: !errors;
       0
   in
-  T.Dec_const i
+    T.Dec_const i
+
+let string_constant s lexbuf =
+  if String.length s = 2 then
+    T.String ""
+  else
+    let s' = 
+      try (String.sub s 1 ((String.length s) - 2))
+      with Invalid_argument _ ->
+      errors := (sprintf "Cannot parse string constant `%s`" (text lexbuf)) :: !errors;
+      ""
+    in
+      T.String s'
 }
 
 let var = ['A'-'Z' 'a'-'z' '_']['A'-'Z' 'a'-'z' '0'-'9' '_']*
@@ -64,7 +76,7 @@ rule initial = parse
 
   | var as name { T.Var (Variable.of_string name) }
 
-  | str as s { T.String s }
+  | str as s { string_constant s lexbuf }
 
   | "(*" { comment 1 lexbuf }
   | "*)" { errors := "Unbalanced comments." :: !errors ;
