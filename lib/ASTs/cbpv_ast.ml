@@ -1,3 +1,5 @@
+module Context = Map.Make(Variable)
+
 type value_type = 
 | Tensor of value_type list
 | Sum of value_type list
@@ -23,7 +25,6 @@ and comp_term =
 | Force of value_term
 | Split of value_term * (Variable.t list * comp_term)
 | Case of value_term * (Variable.t * comp_term) list
-| Check of value_term * comp_term
 | Print of string
 
 type term = Comp of comp_term | Val of value_term
@@ -31,7 +32,7 @@ type term = Comp of comp_term | Val of value_term
 let rec pp_val_typ (t: value_type) =
   match t with 
   | Tensor ts ->  
-    if List.length ts = 0 then "unit" else String.concat " ⊗  " (List.map pp_val_typ ts)
+      if List.length ts = 0 then "unit" else String.concat " ⊗  " (List.map pp_val_typ ts)
   | Sum sums -> String.concat " + " (List.map pp_val_typ sums)
   | U t -> "U(" ^ pp_comp_typ t ^ ")"
 
@@ -61,7 +62,6 @@ and pp_comp_term c =
   | Force v -> "Force(" ^ pp_val_term v ^ ")"
   | Split (v, (vars, c)) -> "Split(" ^ pp_val_term v ^ "; " ^  String.concat "." (List.map Variable.pp_var vars) ^"." ^ pp_comp_term c ^ ")"
   | Case (v, arms) -> "Case(" ^ pp_val_term v ^ "; " ^ ";" ^ String.concat ";" (List.map (fun (x, c) -> Variable.pp_var x^ "." ^ pp_comp_term c) arms)^ ")"
-  | Check (v, c) -> "Check(" ^ pp_val_term v ^ ";" ^ pp_comp_term c ^ ")"
   | Print s -> "Print(" ^ s ^ ")"
 
 let pp_term t = 

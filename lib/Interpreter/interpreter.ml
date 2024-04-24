@@ -20,7 +20,6 @@ and substComp (v : value_term) (x : Variable.t) (c : comp_term) : comp_term =
   | Force v' -> Force (substVal v x v') 
   | Split (v', (xs, c')) -> Split (substVal v x v', (xs, substComp v x c'))
   | Case (v', arms) -> Case (substVal v x v', List.map (fun (x', c') -> (x', substComp v x c')) arms)
-  | Check (v', c') -> Check (substVal v x v', substComp v x c')
   | Print s -> Print s)
 
 let rec progressTensor (vs : value_term list) (acc : value_term list) =
@@ -76,11 +75,6 @@ let rec progressComp (c : comp_term) : comp_term state =
     | Final (Inj (_, i, v')) -> let (x, c') = List.nth arms (i - 1) in Stepping (substComp v' x c')
     | Final _ -> failwith "Final value for case somehow not in canonical form for sum"
     | Stepping v' -> Stepping (Case (v', arms)))
-  | Check (v, c') ->
-    (match progressVal v with
-    | Final (TensorProd []) -> Stepping c'
-    | Final _ -> failwith "Final value for check somehow not in canonical form for unit"
-    | Stepping v' -> Stepping (Check (v', c')))
   | Print s -> print_endline s; Final (Ret (TensorProd [])))
 
 let rec interpret (c : comp_term) : value_term =

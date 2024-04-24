@@ -1,3 +1,5 @@
+module Context : Map.S
+
 type value_type = 
 | Tensor of value_type list
 | Sum of value_type list
@@ -23,7 +25,6 @@ and comp_term =
 | Force of value_term
 | Split of value_term * (Variable.t list * comp_term)
 | Case of value_term * (Variable.t * comp_term) list
-| Check of value_term * comp_term
 | Print of string
 
 

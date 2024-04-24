@@ -89,11 +89,6 @@ and infer_tc_comp (ctx : value_type Context.t) (c : comp_term) : (comp_type, str
       | Ok _ -> Error (Printf.sprintf "Tried to case on a non-sum: %s" (pp_term (Comp c)))
       | Error e -> Error e
     )
-  | Check (v, c') ->
-    (match infer_tc_val ctx v with
-    | Ok(Tensor []) -> infer_tc_comp ctx c'
-    | Ok _ -> Error (Printf.sprintf "Expression being checked does not have unit type: `%s`" (pp_term (Val v)))
-    | Error e -> Error e)
   | Print _ -> Ok(F(Tensor []))
 
 and tc_val (ctx : value_type Context.t) (v : value_term) (t : value_type) : (unit, string) result =

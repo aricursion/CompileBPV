@@ -25,7 +25,7 @@ let rec elab (e : Ast.term) =
       Bind (elab e, z, Split (Var z, ([x; y], elab e')))
   | Ast.Check (e1, e2) ->
       let z = Variable.new_var() in 
-      Bind (elab e1, z, Check(Var z, elab e2))
+      Bind (elab e1, z, Split (Var z, ([], elab e2)))
   | Ast.Inj (t, i, e) -> 
       let z = Variable.new_var() in
       Bind (elab e, z, Ret (Inj(trans_typ t, i, Var z)))
