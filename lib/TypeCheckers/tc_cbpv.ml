@@ -1,8 +1,5 @@
 open Cbpv_ast
 
-(* context should only contain variables with value type *)
-module Context = Map.Make(Variable)
-
 let rec infer_tc_val (ctx : value_type Context.t) (v : value_term) : (value_type, string) result =
   match v with
   | Var x -> (
@@ -104,3 +101,7 @@ and tc_comp (ctx : value_type Context.t) (c : comp_term) (t : comp_type) : (unit
 let check_type (c : comp_term) (t : comp_type) = tc_comp Context.empty c t
 
 let infer_type (c : comp_term) = infer_tc_comp Context.empty c
+
+let infer_comp_type_ctx ctx c = infer_tc_comp ctx c 
+
+let infer_value_type_ctx ctx m = infer_tc_val ctx m

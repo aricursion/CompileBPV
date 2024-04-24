@@ -1,6 +1,6 @@
-module Context = Map.Make(Variable)
+module Context: Map.S with type key = Variable.t
 
-module TContext = Map.Make(Variable)
+module TContext : Map.S with type key = Variable.t
 
 type value_type = 
 | Tensor of value_type list
@@ -21,7 +21,6 @@ type value_term =
 | Pack of value_type * value_term
 | Close of comp_term
 | Vlet of Variable.t * value_term * value_term
-
 
 and comp_term = 
 | Ret of value_term

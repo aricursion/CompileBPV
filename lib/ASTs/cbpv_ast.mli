@@ -1,4 +1,4 @@
-module Context : Map.S
+module Context : Map.S with type key = Variable.t
 
 type value_type = 
 | Tensor of value_type list
