@@ -53,26 +53,21 @@ and trans_comp_term ctx c =
                     | Ok(Tensor vs) -> vs
                     | Ok t -> failwith (Printf.sprintf "Expected value being split to have tensor type, had type %s instead" (Cbpv_ast.pp_typ (ValTyp t)))
                     | Error e -> failwith e in
-      let rec ctx_helper vars i acc =
-        match vars with 
-        | [] -> acc
-        | x::xs -> ctx_helper xs (i+1) (Cbpv_ast.Context.add x (List.nth prod_typ i) acc) in
-      let new_ctx = ctx_helper vars 0 ctx in 
+      let new_ctx = List.fold_left (fun acc_ctx (t, x) -> Cbpv_ast.Context.add x t acc_ctx) ctx (List.combine prod_typ vars) in 
       Split (trans_value_term ctx v, (vars, trans_comp_term new_ctx c))
   | Cbpv_ast.Case (v, arms) -> 
       let sum_typ = match (Tc_cbpv.infer_value_type_ctx ctx v) with 
                     | Ok(Sum vs) -> vs
                     | Ok t -> failwith (Printf.sprintf "Expecting value being cased on to have some type type, had type %s instead" (Cbpv_ast.pp_typ (ValTyp t)))
                     | Error e -> failwith e in
-      let rec arm_helper arms acc =
+      let rec arm_helper arms =
         match arms with 
-        | [] -> acc
+        | [] -> []
         | (t, (x, c))::arms -> 
             let new_ctx = Cbpv_ast.Context.add x t ctx in
-            let new_acc = (x, trans_comp_term new_ctx c)::acc in
-            arm_helper arms new_acc
+            (x, trans_comp_term new_ctx c)::(arm_helper arms)
       in
-      Case (trans_value_term ctx v, List.rev (arm_helper (List.combine sum_typ arms) []))
+      Case (trans_value_term ctx v, arm_helper (List.combine sum_typ arms))
   | Cbpv_ast.Print s -> Print s
 
 let translate : Cbpv_ast.comp_term -> Cc_ast.comp_term = trans_comp_term (Cbpv_ast.Context.empty)
