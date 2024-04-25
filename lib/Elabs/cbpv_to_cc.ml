@@ -43,7 +43,8 @@ and trans_comp_term ctx c =
   | Cbpv_ast.Bind (c, x, c1) -> 
     (match Tc_cbpv.infer_comp_type_ctx ctx c with
     | Ok(F a) -> Bind (trans_comp_term ctx c, x, trans_comp_term (Cbpv_ast.Context.add x a ctx) c1)
-    | _ -> failwith "meow")
+    | Ok t -> failwith (Printf.sprintf "Expected comp being bound to have F type, had type %s instead" (Cbpv_ast.pp_typ (CompTyp t)))
+    | Error e -> failwith e)
   | Cbpv_ast.Lam (x, t, c) ->
       let new_ctx = Cbpv_ast.Context.add x t ctx in 
       Lam (x, trans_value_typ t, trans_comp_term new_ctx c)
@@ -56,8 +57,8 @@ and trans_comp_term ctx c =
   | Cbpv_ast.Split (v, (xs, c)) -> 
       let prod_typ = match (Tc_cbpv.infer_value_type_ctx ctx v) with 
                     | Ok(Tensor vs) -> vs
-                      (* Hopefully unreachable *)
-                    | _ -> failwith "types wrong" in
+                    | Ok t -> failwith (Printf.sprintf "Expected value being split to have tensor type, had type %s instead" (Cbpv_ast.pp_typ (ValTyp t)))
+                    | Error e -> failwith e in
       let rec ctx_helper vars i acc =
         match vars with 
         | [] -> acc
@@ -67,7 +68,7 @@ and trans_comp_term ctx c =
   | Cbpv_ast.Case (v, arms) -> 
       let sum_typ = match (Tc_cbpv.infer_value_type_ctx ctx v) with 
                     | Ok(Sum vs) -> vs
-                    | Ok t -> failwith (Printf.sprintf "Expecting sum type, got %s" (Cbpv_ast.pp_typ (ValTyp t)))
+                    | Ok t -> failwith (Printf.sprintf "Expecting value being cased on to have some type type, had type %s instead" (Cbpv_ast.pp_typ (ValTyp t)))
                     | Error e -> failwith e in
       let rec arm_helper arms i acc =
         match arms with 
