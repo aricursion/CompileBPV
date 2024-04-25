@@ -71,7 +71,11 @@ and pp_comp_term c =
   | Lam (x, t, c) -> "λ(" ^ Variable.pp_var x ^ ":" ^ pp_val_typ t ^ ")." ^ pp_comp_term c
   | Ap (c1, v) -> "Ap(" ^ pp_comp_term c1 ^ "," ^ pp_val_term v ^ ")"
   | Open v -> "Open(" ^ pp_val_term v ^ ")"
-  | Split (v, (vars, c)) -> "Split(" ^ pp_val_term v ^ "; " ^  String.concat "." (List.map Variable.pp_var vars) ^"." ^ pp_comp_term c ^ ")"
+  | Split (v, (vars, c)) -> 
+      if List.length vars > 0 then
+        "Split(" ^ pp_val_term v ^ "; " ^  String.concat "." (List.map Variable.pp_var vars) ^"." ^ pp_comp_term c ^ ")"
+      else
+        "Check(" ^ pp_val_term v ^ "; " ^ pp_comp_term c ^ ")"
   | Case (v, arms) -> "Case(" ^ pp_val_term v ^ "; " ^ ";" ^ String.concat ";" (List.map (fun (x, c) -> Variable.pp_var x^ "." ^ pp_comp_term c) arms)^ ")"
   | Print s -> "Print(" ^ s ^ ")"
   | Unpack (v, (x, c)) -> Printf.sprintf "Unpack(%s as %s in %s)" (pp_val_term v) (Variable.pp_var x) (pp_comp_term c)
