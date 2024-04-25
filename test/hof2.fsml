@@ -1,1 +1,1 @@
-(fn (f : unit -> unit -> unit) => f(<>)(<>))(fn (x : unit) => fn (y : unit) => x)
+(fn (f : unit -> (unit + unit) -> unit) => f(<>)(inj[unit+unit](1)(<>)))(fn (x : unit) => fn (y : unit + unit) => x)
