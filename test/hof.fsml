@@ -1,0 +1,1 @@
+(fn (f : unit -> (unit + unit)) => f(<>))(fn (x: unit) => inj[unit+unit](1)(x))
