@@ -44,7 +44,7 @@ let rec pp_val_typ (t: value_type) =
   | Sum sums -> String.concat " + " (List.map pp_val_typ sums)
   | Tvar t -> Variable.pp_var t
   | Exists (t, tau) -> Printf.sprintf "∃(%s. %s)" (Variable.pp_var t) (pp_val_typ tau)
-  | UU t -> "UU(" ^ pp_comp_typ t ^ ")"
+  | UU t -> "𝕌(" ^ pp_comp_typ t ^ ")"
 
 and pp_comp_typ (t : comp_type) =
   match t with 
