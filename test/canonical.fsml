@@ -1,4 +1,4 @@
 (* Canonical source file of all constructs that will be in our language *)
 
 (fn (x : (unit * unit) + unit) => print "meow"; case x { v1 => split v1 as a, b in a | v2 => check v2 in <> })
-(inj[(unit * unit) + unit](1)(<<>, <>>))
+(inj[(unit * unit) + unit](2)(<<>, <>>))
