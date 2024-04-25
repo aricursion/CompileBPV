@@ -86,7 +86,7 @@ let rec infer_value_type (ctx : ctx) (v : value_term) : (value_type, string) res
     | _ -> Error (Printf.sprintf "Injection is not annotated with sum type: %s" (pp_term (Val v)))
     )
   | Close c ->
-    (match infer_comp_type ctx c with
+    (match infer_comp_type { typCtx = TContext.empty; valCtx = Context.empty } c with
     | Ok(ct) -> Ok(UU ct)
     | Error e -> Error e)
   | Pack ((t, tau), r, v) ->
