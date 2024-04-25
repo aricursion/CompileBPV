@@ -1,6 +1,6 @@
 module Context: Map.S with type key = Variable.t
 
-module TContext : Map.S with type key = Variable.t
+module TContext : Set.S with type elt = Variable.t
 
 type value_type = 
 | Tensor of value_type list

@@ -1,6 +1,6 @@
 module Context = Map.Make(Variable)
 
-module TContext = Map.Make(Variable)
+module TContext = Set.Make(Variable)
 
 type value_type = 
 | Tensor of value_type list
