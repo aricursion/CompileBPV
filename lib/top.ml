@@ -8,8 +8,11 @@ let compile (filename : string) =
       print_endline (Cbpv_ast.pp_term (Cbpv_ast.Comp cbpv_ast)) ;
       (match Tc_cbpv.infer_type cbpv_ast with
       | Ok tau' -> print_endline (Cbpv_ast.pp_typ (CompTyp tau')) ;
-        let final = Interpreter.interpret cbpv_ast in
-        print_endline (Printf.sprintf "Returned with value %s" (Cbpv_ast.pp_term (Val final)))
+        let runCBPV = Cbpv_interpreter.interpret cbpv_ast in
+        print_endline (Printf.sprintf "CBPV interpreter returns with value %s" (Cbpv_ast.pp_term (Val runCBPV))) ;
+        let cc_ast = Cbpv_to_cc.translate cbpv_ast in
+        let runCC = Cc_interpreter.interpret cc_ast in
+        print_endline (Printf.sprintf "CC interpreter returns with value %s" (Cc_ast.pp_term (Val runCC)))
       | Error s -> failwith s)
   | Error s -> failwith s
 
