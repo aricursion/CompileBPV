@@ -73,15 +73,15 @@ and trans_comp_term ctx c =
                     | Ok(Sum vs) -> vs
                     | Ok t -> failwith (Printf.sprintf "Expecting value being cased on to have some type type, had type %s instead" (Cbpv_ast.pp_typ (ValTyp t)))
                     | Error e -> failwith e in
-      let rec arm_helper arms i acc =
+      let rec arm_helper arms acc =
         match arms with 
         | [] -> acc
-        | (x, c)::arms -> 
-            let new_ctx = Cbpv_ast.Context.add x (List.nth sum_typ i) ctx in
-            let new_acc = acc @ [(x, trans_comp_term new_ctx c)] in
-            arm_helper arms (i+1) new_acc
+        | (t, (x, c))::arms -> 
+            let new_ctx = Cbpv_ast.Context.add x t ctx in
+            let new_acc = (x, trans_comp_term new_ctx c)::acc in
+            arm_helper arms new_acc
       in
-      Case (trans_value_term ctx v, arm_helper arms 0 [])
+      Case (trans_value_term ctx v, List.rev (arm_helper (List.combine sum_typ arms) []))
   | Cbpv_ast.Print s -> Print s
 
 let translate : Cbpv_ast.comp_term -> Cc_ast.comp_term = trans_comp_term (Cbpv_ast.Context.empty)
