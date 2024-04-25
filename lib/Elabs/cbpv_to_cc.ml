@@ -35,7 +35,10 @@ let rec trans_value_term ctx m =
       in
       let (split_vars, res_term) = split_helper (List.map (fun v -> match v with Var x -> x | _ -> failwith "impossible") var_list) in 
       let r = Close (Lam(g, pack_typ, Split(Var g, (split_vars, res_term)))) in
-      Pack (pack_typ, TensorProd [l; r])
+      let t = Variable.new_var() in
+      (match Tc_cbpv.infer_comp_type_ctx ctx c with 
+      | Ok tau -> Pack ((t, Tensor [Tvar t; UU (Arr (Tvar t, trans_comp_typ tau))]), pack_typ, TensorProd [l; r])
+      | Error e -> failwith e)
 
 and trans_comp_term ctx c = 
   match c with 
@@ -54,7 +57,7 @@ and trans_comp_term ctx c =
       let yenv = Variable.new_var() in 
       let c = Variable.new_var() in 
       Unpack (trans_value_term ctx m, (x, Split(Var x, ([yenv; c], Ap(Open (Var c), Var(yenv))))))
-  | Cbpv_ast.Split (v, (xs, c)) -> 
+  | Cbpv_ast.Split (v, (vars, c)) -> 
       let prod_typ = match (Tc_cbpv.infer_value_type_ctx ctx v) with 
                     | Ok(Tensor vs) -> vs
                     | Ok t -> failwith (Printf.sprintf "Expected value being split to have tensor type, had type %s instead" (Cbpv_ast.pp_typ (ValTyp t)))
@@ -62,9 +65,9 @@ and trans_comp_term ctx c =
       let rec ctx_helper vars i acc =
         match vars with 
         | [] -> acc
-        | x::xs -> ctx_helper xs (i+1) (Cbpv_ast.Context.add x (List.nth prod_typ i) ctx) in
-      let new_ctx = ctx_helper xs 0 ctx in 
-      Split (trans_value_term ctx v, (xs, trans_comp_term new_ctx c))
+        | x::xs -> ctx_helper xs (i+1) (Cbpv_ast.Context.add x (List.nth prod_typ i) acc) in
+      let new_ctx = ctx_helper vars 0 ctx in 
+      Split (trans_value_term ctx v, (vars, trans_comp_term new_ctx c))
   | Cbpv_ast.Case (v, arms) -> 
       let sum_typ = match (Tc_cbpv.infer_value_type_ctx ctx v) with 
                     | Ok(Sum vs) -> vs

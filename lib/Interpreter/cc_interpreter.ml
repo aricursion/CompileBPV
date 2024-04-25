@@ -8,7 +8,7 @@ let rec substVal (v1 : value_term) (x : Variable.t) (v2 : value_term) : value_te
   | Var x' -> if Variable.compare x x' = 0 then v1 else v2
   | TensorProd vs -> TensorProd (List.map (substVal v1 x) vs)
   | Inj (t, i, v) -> Inj (t, i, substVal v1 x v)
-  | Pack (t, v) -> Pack (t, substVal v1 x v)
+  | Pack (typop, t, v) -> Pack (typop, t, substVal v1 x v)
   | Close c -> Close (substComp v1 x c))
 
 (* substitutes v for x in c *)
@@ -41,10 +41,10 @@ and progressVal (v : value_term) : value_term state =
     (match progressVal v with
     | Final v' -> Final (Inj (t, i, v'))
     | Stepping v' -> Stepping (Inj (t, i, v')))
-  | Pack (t, v) -> 
+  | Pack (typop, t, v) -> 
     (match progressVal v with
-    | Final v' -> Final (Pack (t, v'))
-    | Stepping v' -> Stepping (Pack (t, v')))
+    | Final v' -> Final (Pack (typop, t, v'))
+    | Stepping v' -> Stepping (Pack (typop, t, v')))
   | Close c -> Final (Close c))
 
 let rec progressComp (c : comp_term) : comp_term state =
@@ -89,7 +89,7 @@ let rec progressComp (c : comp_term) : comp_term state =
   | Print s -> print_endline s; Final (Ret (TensorProd []))
   | Unpack (v, (x, c)) -> 
     (match progressVal v with
-    | Final (Pack (_, v')) -> Stepping (substComp v' x c)
+    | Final (Pack (_, _, v')) -> Stepping (substComp v' x c)
     | Final _ -> failwith "Final value for unpack somehow not in canonical form for existential type"
     | Stepping v' -> Stepping (Unpack (v', (x, c)))))
 

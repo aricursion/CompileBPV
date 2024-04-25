@@ -19,7 +19,7 @@ type value_term =
 | Var of Variable.t
 | TensorProd of value_term list
 | Inj of value_type * int * value_term
-| Pack of value_type * value_term
+| Pack of (Variable.t * value_type) * value_type * value_term
 | Close of comp_term
 
 and comp_term = 

@@ -19,7 +19,7 @@ type value_term =
 | Var of Variable.t
 | TensorProd of value_term list
 | Inj of value_type * int * value_term
-| Pack of value_type * value_term
+| Pack of (Variable.t * value_type) * value_type * value_term
 | Close of comp_term
 
 
@@ -63,7 +63,7 @@ let rec pp_val_term v =
   | TensorProd vs -> "<" ^ String.concat "," (List.map pp_val_term vs) ^ ">"
   | Inj (_, i, v) -> Printf.sprintf "inj%d (%s)" i (pp_val_term v)
   | Close c -> "Close(" ^ pp_comp_term c ^ ")"
-  | Pack (t, v) -> Printf.sprintf "Pack(%s; %s)" (pp_val_typ t) (pp_val_term v)
+  | Pack ((t, tau), r, v) -> Printf.sprintf "Pack[%s.%s](%s; %s)" (Variable.pp_var t) (pp_typ (ValTyp tau)) (pp_val_typ r) (pp_val_term v)
 
 and pp_comp_term c = 
   match c with
