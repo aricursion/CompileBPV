@@ -26,7 +26,6 @@ type value_term =
 and comp_term = 
 | Ret of value_term
 | Bind of comp_term * Variable.t * comp_term
-| CLet of Variable.t * value_term * comp_term
 | Lam of Variable.t * value_type * comp_term
 | Ap of comp_term * value_term
 | Split of value_term * (Variable.t list * comp_term)
@@ -69,7 +68,6 @@ and pp_comp_term c =
   match c with
   | Ret v -> "Ret(" ^ pp_val_term v ^ ")"
   | Bind (c, x, c1) -> "Bind(" ^ pp_comp_term c ^ "; " ^ Variable.pp_var x ^ "." ^ pp_comp_term c1 ^ ")"
-  | CLet (x, v, c) -> Printf.sprintf "CLet(%s = %s in %s)" (Variable.pp_var x) (pp_val_term v) (pp_comp_term c)
   | Lam (x, t, c) -> "λ(" ^ Variable.pp_var x ^ ":" ^ pp_val_typ t ^ ")." ^ pp_comp_term c
   | Ap (c1, v) -> "Ap(" ^ pp_comp_term c1 ^ "," ^ pp_val_term v ^ ")"
   | Open v -> "Open(" ^ pp_val_term v ^ ")"

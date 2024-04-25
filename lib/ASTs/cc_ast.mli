@@ -25,7 +25,6 @@ type value_term =
 and comp_term = 
 | Ret of value_term
 | Bind of comp_term * Variable.t * comp_term
-| CLet of Variable.t * value_term * comp_term
 | Lam of Variable.t * value_type * comp_term
 | Ap of comp_term * value_term
 | Split of value_term * (Variable.t list * comp_term)

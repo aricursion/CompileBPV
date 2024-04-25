@@ -111,10 +111,6 @@ and infer_comp_type (ctx : ctx) (c : comp_term) : (comp_type, string) result =
       | F a -> infer_comp_type { ctx with valCtx = Context.add x a ctx.valCtx } c2
       | _ -> Error (Printf.sprintf "First computation in Bind does not have F type: %s" (pp_term (Comp c1))))
     | Error e -> Error e)
-  | CLet (x, v, c') -> 
-    (match infer_value_type ctx v with
-    | Ok t -> infer_comp_type { ctx with valCtx = Context.add x t ctx.valCtx } c'
-    | Error e -> Error e)
   | Lam (x, typ, c') -> (
       match infer_comp_type {ctx with valCtx = (Context.add x typ ctx.valCtx)} c' with
       | Ok(t2) -> Ok(Arr(typ, t2))

@@ -16,7 +16,6 @@ and substComp (v : value_term) (x : Variable.t) (c : comp_term) : comp_term =
   (match c with
   | Ret v' -> Ret (substVal v x v')
   | Bind (c1, x', c2) -> Bind (substComp v x c1, x', substComp v x c2)
-  | CLet (x', v', c') -> CLet (x', substVal v x v', substComp v x c')
   | Lam (x', t, c') -> Lam (x', t, substComp v x c')
   | Ap (c', v') -> Ap (substComp v x c', substVal v x v')
   | Split (v', (xs, c')) -> Split (substVal v x v', (xs, substComp v x c'))
@@ -58,10 +57,6 @@ let rec progressComp (c : comp_term) : comp_term state =
     | Final (Ret v) -> Stepping (substComp v x c2)
     | Final _ -> failwith "Final command for bind somehow not in canonical form for F(A)"
     | Stepping c1' -> Stepping (Bind (c1', x, c2)))
-  | CLet (x, v1, c') ->
-    (match progressVal v1 with
-    | Final v1' -> Stepping (substComp v1' x c')
-    | Stepping v1' -> Stepping (CLet (x, v1', c')))
   | Lam (x, t, c') -> Final (Lam (x, t, c'))
   | Ap (c', v) ->
     (match progressComp c' with

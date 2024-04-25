@@ -20,21 +20,12 @@ let rec trans_value_term ctx m =
   | Cbpv_ast.Inj (t, i, v) -> Inj (trans_value_typ t, i, trans_value_term ctx v)
   | Cbpv_ast.Susp c -> 
       let ctx_list = Cbpv_ast.Context.to_list ctx in
-      let trans_var_typ_list = List.map (fun (x, t) -> (Var x, trans_value_typ t)) ctx_list in 
+      let trans_var_typ_list = List.map (fun (x, t) -> (x, trans_value_typ t)) ctx_list in 
       let (var_list, typ_list) = List.fold_right (fun (x, t) (acc1, acc2) -> (x::acc1, t::acc2)) trans_var_typ_list ([], []) in 
       let pack_typ = Tensor typ_list in 
-      let l = TensorProd var_list in 
+      let l = TensorProd (List.map (fun x -> Var x) var_list) in 
       let g = Variable.new_var() in 
-      let rec split_helper old_vars = 
-        match old_vars with 
-        | [] -> ([], trans_comp_term ctx c) 
-        | x::xs -> 
-            let ai = Variable.new_var() in 
-            let (new_vars, res) = split_helper xs in 
-            (ai::new_vars, CLet (x, Var ai, res))
-      in
-      let (split_vars, res_term) = split_helper (List.map (fun v -> match v with Var x -> x | _ -> failwith "impossible") var_list) in 
-      let r = Close (Lam(g, pack_typ, Split(Var g, (split_vars, res_term)))) in
+      let r = Close (Lam(g, pack_typ, Split(Var g, (var_list, trans_comp_term ctx c)))) in
       let t = Variable.new_var() in
       (match Tc_cbpv.infer_comp_type_ctx ctx c with 
       | Ok tau -> Pack ((t, Tensor [Tvar t; UU (Arr (Tvar t, trans_comp_typ tau))]), pack_typ, TensorProd [l; r])
