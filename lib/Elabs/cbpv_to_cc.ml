@@ -70,7 +70,8 @@ and trans_comp_term ctx c =
         | [] -> acc
         | (x, c)::arms -> 
             let new_ctx = Cbpv_ast.Context.add x (List.nth sum_typ i) ctx in
-            acc @ [(x, trans_comp_term new_ctx c)]
+            let new_acc = acc @ [(x, trans_comp_term new_ctx c)] in
+            arm_helper arms (i+1) new_acc
       in
       Case (trans_value_term ctx v, arm_helper arms 0 [])
   | Cbpv_ast.Print s -> Print s
