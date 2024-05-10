@@ -10,17 +10,18 @@
 %token Pipe
 %token Colon Comma
 %token Lambda Arrow
-%token Print Inj Split Case As In Check Div Sub IntToString Concat
+%token Print Inj Split Case As In Check Div Sub IntToString Concat Let Equal
 
 %right Arrow_typ
 %right Arrow
-%left Star
-%left Plus
 %right In
+%left Plus
+%left Sub 
+%left Star
+
 %right Print
 %left Div
-%left  Concat
-%left Sub 
+%left Concat
 
 %right IntToString
 
@@ -105,6 +106,8 @@ term :
       {Ast.Prim (Prim.IntToString, [m])}
   | m = term; Concat; n = term;
       {Ast.Prim (Prim.Concat, [m; n])}
+  | Let x = Var; Equal; m = term; In; n = term;
+      {Ast.Let (x, m, n)}
   ;
 
 %%

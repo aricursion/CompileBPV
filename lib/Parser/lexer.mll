@@ -54,6 +54,7 @@ rule initial = parse
   | ',' { T.Comma }
 
   | "=>"  { T.Arrow }
+  | "="   { T.Equal }
   | "fn"  { T.Lambda }
 
   | "->"     { T.Arrow_typ }
@@ -76,6 +77,7 @@ rule initial = parse
 
   | "as"      { T.As }
   | "in"      { T.In }
+  | "let"     { T.Let }
 
   | dec_num as n { dec_constant n lexbuf }
 

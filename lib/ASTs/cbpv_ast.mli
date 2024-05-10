@@ -3,6 +3,8 @@ module Context : Map.S with type key = Variable.t
 type value_type =
   | Tensor of value_type list
   | Sum of value_type list
+  | Int_Typ
+  | String_Typ
   | U of comp_type
 
 and comp_type = Arr of value_type * comp_type | F of value_type
@@ -14,6 +16,8 @@ type value_term =
   | TensorProd of value_term list
   | Inj of value_type * int * value_term
   | Susp of comp_term
+  | Int of int
+  | String of string
 
 and comp_term =
   | Ret of value_term
@@ -23,7 +27,7 @@ and comp_term =
   | Force of value_term
   | Split of value_term * (Variable.t list * comp_term)
   | Case of value_term * (Variable.t * comp_term) list
-  | Print of string
+  | Prim of Prim.prim * value_term list 
 
 type term = Comp of comp_term | Val of value_term
 

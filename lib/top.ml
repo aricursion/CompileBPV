@@ -5,23 +5,21 @@ let compile (filename : string) =
   print_endline ("ML Type: " ^ Ast.pp_typ tau);
   let cbpv_ast = Ml_to_cbpv.elab ast in
   print_endline ("CBPV Term: " ^ Cbpv_ast.pp_term (Cbpv_ast.Comp cbpv_ast));
-  match Tc_cbpv.infer_type cbpv_ast with
-  | Ok tau' -> (
-      print_endline ("CBPV type: " ^ Cbpv_ast.pp_typ (CompTyp tau'));
-      let runCBPV = Cbpv_interpreter.interpret cbpv_ast in
+  let tau' = Tc_cbpv.infer_type cbpv_ast in
+  print_endline ("CBPV type: " ^ Cbpv_ast.pp_typ (CompTyp tau'));
+  let runCBPV = Cbpv_interpreter.interpret cbpv_ast in
+  print_endline
+    (Printf.sprintf "CBPV interpreter returns with value %s"
+       (Cbpv_ast.pp_term (Val runCBPV)));
+  let cc_ast = Cbpv_to_cc.translate cbpv_ast in
+  print_endline ("CC Term: " ^ Cc_ast.pp_term (Comp cc_ast));
+  match Tc_cc.infer_type cc_ast with
+  | Ok t ->
+      print_endline ("CC type: " ^ Cc_ast.pp_typ (CompTyp t));
+      let runCC = Cc_interpreter.interpret cc_ast in
       print_endline
-        (Printf.sprintf "CBPV interpreter returns with value %s"
-           (Cbpv_ast.pp_term (Val runCBPV)));
-      let cc_ast = Cbpv_to_cc.translate cbpv_ast in
-      print_endline ("CC Term: " ^ Cc_ast.pp_term (Comp cc_ast));
-      match Tc_cc.infer_type cc_ast with
-      | Ok t ->
-          print_endline ("CC type: " ^ Cc_ast.pp_typ (CompTyp t));
-          let runCC = Cc_interpreter.interpret cc_ast in
-          print_endline
-            (Printf.sprintf "CC interpreter returns with value %s"
-               (Cc_ast.pp_term (Val runCC)))
-      | Error e -> failwith e)
+        (Printf.sprintf "CC interpreter returns with value %s"
+           (Cc_ast.pp_term (Val runCC)))
   | Error s -> failwith s
 
 let main () =

@@ -3,6 +3,8 @@ module Context = Map.Make (Variable)
 type value_type =
   | Tensor of value_type list
   | Sum of value_type list
+  | Int_Typ
+  | String_Typ
   | U of comp_type
 
 and comp_type = Arr of value_type * comp_type | F of value_type
@@ -14,6 +16,8 @@ type value_term =
   | TensorProd of value_term list
   | Inj of value_type * int * value_term
   | Susp of comp_term
+  | Int of int
+  | String of string
 
 and comp_term =
   | Ret of value_term
@@ -23,7 +27,7 @@ and comp_term =
   | Force of value_term
   | Split of value_term * (Variable.t list * comp_term)
   | Case of value_term * (Variable.t * comp_term) list
-  | Print of string
+  | Prim of Prim.prim * value_term list 
 
 type term = Comp of comp_term | Val of value_term
 
@@ -34,6 +38,8 @@ let rec pp_val_typ (t : value_type) =
       else String.concat " ⊗  " (List.map pp_val_typ ts)
   | Sum sums -> String.concat " + " (List.map pp_val_typ sums)
   | U t -> "U(" ^ pp_comp_typ t ^ ")"
+  | Int_Typ -> "int"
+  | String_Typ -> "string"
 
 and pp_comp_typ (t : comp_type) =
   match t with
@@ -49,6 +55,8 @@ let rec pp_val_term v =
   | TensorProd vs -> "<" ^ String.concat "," (List.map pp_val_term vs) ^ ">"
   | Inj (_, i, v) -> Printf.sprintf "inj%d (%s)" i (pp_val_term v)
   | Susp c -> "Susp(" ^ pp_comp_term c ^ ")"
+  | Int i -> string_of_int i
+  | String s -> s
 
 and pp_comp_term c =
   match c with
@@ -73,6 +81,8 @@ and pp_comp_term c =
              (fun (x, c) -> Variable.pp_var x ^ "." ^ pp_comp_term c)
              arms)
       ^ ")"
-  | Print s -> "Print(" ^ s ^ ")"
+  | Prim (p, t) ->
+    Printf.sprintf "%s [%s]" (Prim.pp_prim p)
+      (String.concat ", " (List.map pp_val_term t))
 
 let pp_term t = match t with Comp t -> pp_comp_term t | Val t -> pp_val_term t

@@ -6,7 +6,8 @@ let rec trans_typ (t : Ast.typ) =
   | Ast.Prod (t1, t2) -> Tensor [ trans_typ t1; trans_typ t2 ]
   | Ast.Sum (t1, t2) -> Sum [ trans_typ t1; trans_typ t2 ]
   | Ast.Unit -> Tensor []
-  | _ -> failwith "todo"
+  | Ast.Int_Typ -> Int_Typ
+  | Ast.String_Typ -> String_Typ
 
 let rec elab (e : Ast.term) =
   match e with
@@ -33,4 +34,15 @@ let rec elab (e : Ast.term) =
   | Ast.Case (e, (x, e1), (y, e2)) ->
       let z = Variable.new_var () in
       Bind (elab e, z, Case (Var z, [ (x, elab e1); (y, elab e2) ]))
-  | _ -> failwith "todo"
+  | Ast.Let (x, v, e) -> Bind (elab v, x, elab e)
+  | Ast.Prim (p, args) ->
+      let rec helper l vars =
+        match l with
+        | [] -> Prim (p, List.rev vars)
+        | e :: es ->
+            let z = Variable.new_var () in
+            Bind (elab e, z, helper es (Var z :: vars))
+      in
+      helper args []
+  | Ast.Int i -> Ret (Int i)
+  | Ast.String s -> Ret (String s)

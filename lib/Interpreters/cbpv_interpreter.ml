@@ -10,6 +10,7 @@ let rec substVal (v1 : value_term) (x : Variable.t) (v2 : value_term) :
   | TensorProd vs -> TensorProd (List.map (substVal v1 x) vs)
   | Inj (t, i, v) -> Inj (t, i, substVal v1 x v)
   | Susp c -> Susp (substComp v1 x c)
+  | e -> e
 
 (* substitutes v for x in c *)
 and substComp (v : value_term) (x : Variable.t) (c : comp_term) : comp_term =
@@ -23,7 +24,7 @@ and substComp (v : value_term) (x : Variable.t) (c : comp_term) : comp_term =
   | Case (v', arms) ->
       Case
         (substVal v x v', List.map (fun (x', c') -> (x', substComp v x c')) arms)
-  | Print s -> Print s
+  | _ -> failwith "todo"
 
 let rec progressTensor (vs : value_term list) (acc : value_term list) =
   match vs with
@@ -42,6 +43,7 @@ and progressVal (v : value_term) : value_term state =
       | Final v' -> Final (Inj (t, i, v'))
       | Stepping v' -> Stepping (Inj (t, i, v')))
   | Susp c -> Final (Susp c)
+  | e -> Final e
 
 let rec progressComp (c : comp_term) : comp_term state =
   match c with
@@ -93,9 +95,7 @@ let rec progressComp (c : comp_term) : comp_term state =
       | Final _ ->
           failwith "Final value for case somehow not in canonical form for sum"
       | Stepping v' -> Stepping (Case (v', arms)))
-  | Print s ->
-      print_endline s;
-      Final (Ret (TensorProd []))
+  | _ -> failwith "todo"
 
 let rec interpret (c : comp_term) : value_term =
   match progressComp c with
