@@ -2,19 +2,28 @@
 %token <int> Dec_const
 %token <Variable.t> Var
 %token <string> String
-%token Plus Star Arrow_typ Unit
+%token Plus Star Arrow_typ Unit Int String_Typ
 %token L_brace R_brace
 %token L_paren R_paren
 %token L_bracket R_bracket
 %token L_staple R_staple
 %token Pipe
-%token Colon Semicolon Comma
+%token Colon Comma
 %token Lambda Arrow
-%token Print Inj Split Case As In Check
+%token Print Inj Split Case As In Check Div Sub IntToString Concat
 
 %right Arrow_typ
-%right Star
-%right Plus
+%right Arrow
+%left Star
+%left Plus
+%right In
+%right Print
+%left Div
+%left  Concat
+%left Sub 
+
+%right IntToString
+
 
 %start program
 
@@ -43,6 +52,10 @@ typ :
       { Ast.Sum (t1, t2) }
   | t1 = typ; Arrow_typ; t2 = typ; 
       { Ast.Arrow (t1, t2) }
+  | Int;
+      { Ast.Int_Typ }
+  | String_Typ;
+      {Ast.String_Typ }
   ;
 
 appTerm :
@@ -56,6 +69,10 @@ atom :
       { m }
   | var = Var;
       { Ast.Var var }
+  | n = Dec_const ;
+      {Ast.Int n }
+  | s = String ;
+      {Ast.String s}
   | L_bracket; R_bracket;
       { Ast.Triv }
 
@@ -74,8 +91,20 @@ term :
       { Ast.Case (m, (v1, m1), (v2, m2)) }
   | Check; m = term; In; body = term; 
       { Ast.Check (m, body) }  
-  | Print; s = String; Semicolon; m = term; 
-      { Ast.Print (s, m) }
+  | Print; t = term; 
+      { Ast.Prim (Prim.Print, [t]) }
+  | m = term; Plus; n = term;
+      { Ast.Prim (Prim.Add, [m; n])}
+  | m = term; Sub; n = term;
+      { Ast.Prim (Prim.Add, [m; n])}
+  | m = term; Div; n = term;
+      { Ast.Prim (Prim.Div, [m; n])}
+  | m = term; Star; n = term;
+      { Ast.Prim (Prim.Mul, [m; n])}
+  | IntToString; m = term;
+      {Ast.Prim (Prim.IntToString, [m])}
+  | m = term; Concat; n = term;
+      {Ast.Prim (Prim.Concat, [m; n])}
   ;
 
 %%

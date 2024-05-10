@@ -51,19 +51,24 @@ rule initial = parse
   | ']' { T.R_staple }
   | '|' { T.Pipe }
   | ':' { T.Colon }
-  | ';' { T.Semicolon }
   | ',' { T.Comma }
 
   | "=>"  { T.Arrow }
   | "fn"  { T.Lambda }
 
-  | "->" { T.Arrow_typ }
-  | '*'  { T.Star }
-  | '+'  { T.Plus }
+  | "->"     { T.Arrow_typ }
+  | '*'      { T.Star }
+  | '+'      { T.Plus }
+  | "int"    { T.Int }
+  | "string" {T.String_Typ}
 
   | "unit"    { T.Unit }
 
   | "print"   { T.Print }
+  | "/"       { T.Div }
+  | "I2S"     { T.IntToString }
+  | "-"       { T.Sub }
+  | "^"       { T.Concat }
   | "inj"     { T.Inj }
   | "split"   { T.Split }
   | "case"    { T.Case }
