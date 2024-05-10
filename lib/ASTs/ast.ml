@@ -41,7 +41,7 @@ let rec pp_term e =
   | Let (x, t1, t2) ->
       "Let " ^ Variable.pp_var x ^ " = " ^ pp_term t1 ^ " in " ^ pp_term t2
   | Prim (p, t) ->
-      sprintf "%s [%s]" (Prim.pp_prim p)
+      sprintf "%s[%s]" (Prim.pp_prim p)
         (String.concat ", " (List.map pp_term t))
   | Int i -> sprintf "%d" i
   | String s -> s

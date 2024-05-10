@@ -27,7 +27,7 @@ and comp_term =
   | Force of value_term
   | Split of value_term * (Variable.t list * comp_term)
   | Case of value_term * (Variable.t * comp_term) list
-  | Prim of Prim.prim * value_term list 
+  | Prim of Prim.prim * value_term list
 
 type term = Comp of comp_term | Val of value_term
 
@@ -82,7 +82,7 @@ and pp_comp_term c =
              arms)
       ^ ")"
   | Prim (p, t) ->
-    Printf.sprintf "%s [%s]" (Prim.pp_prim p)
-      (String.concat ", " (List.map pp_val_term t))
+      Printf.sprintf "%s[%s]" (Prim.pp_prim p)
+        (String.concat ", " (List.map pp_val_term t))
 
 let pp_term t = match t with Comp t -> pp_comp_term t | Val t -> pp_val_term t

@@ -27,7 +27,7 @@ and comp_term =
   | Force of value_term
   | Split of value_term * (Variable.t list * comp_term)
   | Case of value_term * (Variable.t * comp_term) list
-  | Prim of Prim.prim * value_term list 
+  | Prim of Prim.prim * value_term list
 
 type term = Comp of comp_term | Val of value_term
 
