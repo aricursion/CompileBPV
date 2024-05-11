@@ -13,14 +13,12 @@ let compile (filename : string) =
        (Cbpv_ast.pp_term (Val runCBPV)));
   let cc_ast = Cbpv_to_cc.translate cbpv_ast in
   print_endline ("CC Term: " ^ Cc_ast.pp_term (Comp cc_ast));
-  match Tc_cc.infer_type cc_ast with
-  | Ok t ->
-      print_endline ("CC type: " ^ Cc_ast.pp_typ (CompTyp t));
-      let runCC = Cc_interpreter.interpret cc_ast in
-      print_endline
-        (Printf.sprintf "CC interpreter returns with value %s"
-           (Cc_ast.pp_term (Val runCC)))
-  | Error s -> failwith s
+  let t = Tc_cc.infer_type cc_ast in
+  print_endline ("CC type: " ^ Cc_ast.pp_typ (CompTyp t));
+  let runCC = Cc_interpreter.interpret cc_ast in
+  print_endline
+    (Printf.sprintf "CC interpreter returns with value %s"
+       (Cc_ast.pp_term (Val runCC)))
 
 let main () =
   let open Cmdliner in

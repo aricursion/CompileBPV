@@ -7,7 +7,8 @@ let rec trans_value_typ t =
   | Cbpv_ast.U x ->
       let t = Variable.new_var () in
       Exists (t, Tensor [ Tvar t; UU (Arr (Tvar t, trans_comp_typ x)) ])
-  | _ -> failwith "todo"
+  | Cbpv_ast.Int_Typ -> Int_Typ
+  | Cbpv_ast.String_Typ -> String_Typ
 
 and trans_comp_typ t =
   match t with
@@ -42,7 +43,8 @@ let rec trans_value_term ctx m =
         ( (t, Tensor [ Tvar t; UU (Arr (Tvar t, trans_comp_typ tau)) ]),
           pack_typ,
           TensorProd [ l; r ] )
-  | _ -> failwith "todo"
+  | Cbpv_ast.Int i -> Int i
+  | Cbpv_ast.String s -> String s
 
 and trans_comp_term ctx c =
   match c with
@@ -107,7 +109,7 @@ and trans_comp_term ctx c =
             (x, trans_comp_term new_ctx c) :: arm_helper arms
       in
       Case (trans_value_term ctx v, arm_helper (List.combine sum_typ arms))
-  | _ -> failwith "todo"
+  | Cbpv_ast.Prim (p, args) -> Prim (p, List.map (trans_value_term ctx) args)
 
 let translate : Cbpv_ast.comp_term -> Cc_ast.comp_term =
   trans_comp_term Cbpv_ast.Context.empty

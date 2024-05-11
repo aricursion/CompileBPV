@@ -17,3 +17,19 @@ module type PrimType = sig
 end
 
 module PrimTypeFun (Param : PrimTypeParam) : PrimType with type t = Param.t
+
+module type PrimEvalParam = sig
+  type t
+  type internal = IntCon of int | StringCon of string | UnitCon
+
+  val internalize : t -> internal
+  val externalize : internal -> t
+end
+
+module type PrimEval = sig
+  type t
+
+  val primeval : prim -> t list -> t
+end
+
+module PrimEvalFun (Param : PrimEvalParam) : PrimEval with type t = Param.t

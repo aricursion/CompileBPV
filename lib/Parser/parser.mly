@@ -15,12 +15,10 @@
 %right Arrow_typ
 %right Arrow
 %right In
-%left Plus
-%left Sub 
-%left Star
+%left Sub Plus
 
 %right Print
-%left Div
+%left Div Star
 %left Concat
 
 %right IntToString
@@ -97,7 +95,7 @@ term :
   | m = term; Plus; n = term;
       { Ast.Prim (Prim.Add, [m; n])}
   | m = term; Sub; n = term;
-      { Ast.Prim (Prim.Add, [m; n])}
+      { Ast.Prim (Prim.Sub, [m; n])}
   | m = term; Div; n = term;
       { Ast.Prim (Prim.Div, [m; n])}
   | m = term; Star; n = term;

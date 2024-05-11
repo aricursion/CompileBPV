@@ -6,6 +6,8 @@ type value_type =
   | Sum of value_type list
   | Tvar of Variable.t
   | Exists of Variable.t * value_type
+  | Int_Typ
+  | String_Typ
   | UU of comp_type
 
 and comp_type = Arr of value_type * comp_type | F of value_type
@@ -18,6 +20,8 @@ type value_term =
   | Inj of value_type * int * value_term
   | Pack of (Variable.t * value_type) * value_type * value_term
   | Close of comp_term
+  | Int of int
+  | String of string
 
 and comp_term =
   | Ret of value_term
@@ -26,9 +30,9 @@ and comp_term =
   | Ap of comp_term * value_term
   | Split of value_term * (Variable.t list * comp_term)
   | Case of value_term * (Variable.t * comp_term) list
-  | Print of string
   | Unpack of value_term * (Variable.t * comp_term)
   | Open of value_term
+  | Prim of Prim.prim * value_term list
 
 type term = Comp of comp_term | Val of value_term
 

@@ -1,1 +1,1 @@
-fn (x : int) => let y = x * x + x / x in y - 2
+(fn (x : int) => let y = x * x + x / x in y - 2)5

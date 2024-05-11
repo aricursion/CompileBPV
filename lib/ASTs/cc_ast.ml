@@ -6,6 +6,8 @@ type value_type =
   | Sum of value_type list
   | Tvar of Variable.t
   | Exists of Variable.t * value_type
+  | Int_Typ
+  | String_Typ
   | UU of comp_type
 
 and comp_type = Arr of value_type * comp_type | F of value_type
@@ -18,6 +20,8 @@ type value_term =
   | Inj of value_type * int * value_term
   | Pack of (Variable.t * value_type) * value_type * value_term
   | Close of comp_term
+  | Int of int
+  | String of string
 
 and comp_term =
   | Ret of value_term
@@ -26,9 +30,9 @@ and comp_term =
   | Ap of comp_term * value_term
   | Split of value_term * (Variable.t list * comp_term)
   | Case of value_term * (Variable.t * comp_term) list
-  | Print of string
   | Unpack of value_term * (Variable.t * comp_term)
   | Open of value_term
+  | Prim of Prim.prim * value_term list
 
 type term = Comp of comp_term | Val of value_term
 
@@ -42,6 +46,8 @@ let rec pp_val_typ (t : value_type) =
   | Exists (t, tau) ->
       Printf.sprintf "∃(%s. %s)" (Variable.pp_var t) (pp_val_typ tau)
   | UU t -> "𝕌(" ^ pp_comp_typ t ^ ")"
+  | Int_Typ -> "int"
+  | String_Typ -> "string"
 
 and pp_comp_typ (t : comp_type) =
   match t with
@@ -60,6 +66,8 @@ let rec pp_val_term v =
   | Pack ((t, tau), r, v) ->
       Printf.sprintf "Pack[%s.%s](%s; %s)" (Variable.pp_var t)
         (pp_typ (ValTyp tau)) (pp_val_typ r) (pp_val_term v)
+  | Int i -> string_of_int i
+  | String s -> s
 
 and pp_comp_term c =
   match c with
@@ -84,9 +92,11 @@ and pp_comp_term c =
              (fun (x, c) -> Variable.pp_var x ^ "." ^ pp_comp_term c)
              arms)
       ^ ")"
-  | Print s -> "Print(" ^ s ^ ")"
   | Unpack (v, (x, c)) ->
       Printf.sprintf "Unpack(%s as %s in %s)" (pp_val_term v)
         (Variable.pp_var x) (pp_comp_term c)
+  | Prim (p, t) ->
+      Printf.sprintf "%s[%s]" (Prim.pp_prim p)
+        (String.concat ", " (List.map pp_val_term t))
 
 let pp_term t = match t with Comp t -> pp_comp_term t | Val t -> pp_val_term t
