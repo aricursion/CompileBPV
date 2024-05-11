@@ -1,0 +1,1 @@
+let x = "hello" in let y = "world" in print (x ^ " " ^ y)

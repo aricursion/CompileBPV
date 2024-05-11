@@ -33,7 +33,7 @@ struct
     | Add | Sub | Mul | Div -> ([ Param.int_typ; Param.int_typ ], Param.int_typ)
     | IntToString -> ([ Param.int_typ ], Param.string_typ)
     | Print -> ([ Param.string_typ ], Param.unit)
-    | Concat -> ([ Param.string_typ; Param.string_typ ], Param.unit)
+    | Concat -> ([ Param.string_typ; Param.string_typ ], Param.string_typ)
 end
 
 module type PrimEvalParam = sig
@@ -91,7 +91,7 @@ struct
     | Print -> (
         match Param.internalize (List.nth args 0) with
         | StringCon s ->
-            print_string s;
+            print_string s ;
             Param.externalize UnitCon
         | _ -> failwith "Tried to print non-string")
     | Concat -> (
