@@ -90,7 +90,7 @@ term :
       { Ast.Case (m, (v1, m1), (v2, m2)) }
   | Check; m = term; In; body = term; 
       { Ast.Check (m, body) }  
-  | Print; t = term; 
+  | Print; t = term
       { Ast.Prim (Prim.Print, [t]) }
   | m = term; Plus; n = term;
       { Ast.Prim (Prim.Add, [m; n])}

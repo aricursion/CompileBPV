@@ -11,30 +11,43 @@ module PrimTypeCC : Prim.PrimTypeParam with type t = value_type = struct
 end
 
 module PrimType = Prim.PrimTypeFun (PrimTypeCC)
+module TypEqMap = Map.Make (Variable)
 
-(* this is just checking structural congruence and not exact equality because types variables are hard *)
-let rec valTypEqual (t : value_type) (t' : value_type) =
+let rec valTypEqualHelper (t : value_type) (t' : value_type)
+    (map : Variable.t TypEqMap.t) =
   match (t, t') with
   | Tensor ts, Tensor ts' ->
       List.fold_left
-        (fun acc (t1, t2) -> valTypEqual t1 t2 && acc)
+        (fun acc (t1, t2) -> valTypEqualHelper t1 t2 map && acc)
         true (List.combine ts ts')
   | Sum ts, Sum ts' ->
       List.fold_left
-        (fun acc (t1, t2) -> valTypEqual t1 t2 && acc)
+        (fun acc (t1, t2) -> valTypEqualHelper t1 t2 map && acc)
         true (List.combine ts ts')
-  | Tvar _, Tvar _ -> true
-  | Exists (_, tau1), Exists (_, tau2) -> valTypEqual tau1 tau2
-  | UU c1, UU c2 -> compTypEqual c1 c2
+  | Tvar x1, Tvar x2 -> (
+      x1 = x2
+      ||
+      match TypEqMap.find_opt x1 map with Some var -> var = x2 | None -> false)
+  | Exists (x1, tau1), Exists (x2, tau2) ->
+      valTypEqualHelper tau1 tau2 (TypEqMap.add x1 x2 map)
+  | UU c1, UU c2 -> compTypEqualHelper c1 c2 map
   | Int_Typ, Int_Typ -> true
   | String_Typ, String_Typ -> true
   | _ -> false
 
-and compTypEqual (t : comp_type) (t' : comp_type) =
+and compTypEqualHelper (t : comp_type) (t' : comp_type)
+    (map : Variable.t TypEqMap.t) =
   match (t, t') with
-  | Arr (t1, t2), Arr (t1', t2') -> valTypEqual t1 t1' && compTypEqual t2 t2'
-  | F t, F t' -> valTypEqual t t'
+  | Arr (t1, t2), Arr (t1', t2') ->
+      valTypEqualHelper t1 t1' map && compTypEqualHelper t2 t2' map
+  | F t, F t' -> valTypEqualHelper t t' map
   | _ -> false
+
+and valTypEqual (t : value_type) (t' : value_type) =
+  valTypEqualHelper t t' TypEqMap.empty
+
+and compTypEqual (t : comp_type) (t' : comp_type) =
+  compTypEqualHelper t t' TypEqMap.empty
 
 let rec substValTyp (tau : value_type) (t : Variable.t) (tau' : value_type) :
     value_type =

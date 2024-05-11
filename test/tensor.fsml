@@ -1,2 +1,2 @@
 (* testing to see whether I implemented the dynamics of products correctly *)
-<print "meow1"; <>, print "meow2"; split (print "meow3"; <<>, <>>) as x1, x2 in <x1, x2>>
+<let _ = print "meow1" in <>, let _ = print "meow2" in split (let _ = print "meow3" in <<>, <>>) as x1, x2 in <x1, x2>>

@@ -1,1 +1,1 @@
-fn (x : unit + unit) => print "meow"; fn (y : unit * (unit + unit)) => x
+fn (x : unit + unit) => let z = print "meow" in fn (y : unit * (unit + unit)) => x
